@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="ku" dir="rtl" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="page-title">سیستەمی شیکاری ئەنجامەکانی هەڵبژاردن</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="dark-theme">
+
+    <!-- Top Header -->
+    <header class="main-header d-flex justify-content-between align-items-center px-4 py-2">
+        <div class="d-flex align-items-center gap-2">
+            <a href="{{ url_for('logout') }}" class="btn-top-icon" title="چوونەدەرەوە"><i class="bi bi-box-arrow-right"></i></a>
+            <button class="btn-top-icon" onclick="switchTab('control-panel-page')" title="کۆنترۆڵ پەناڵ"><i class="bi bi-gear"></i></button>
+            <button class="btn-top-pill" onclick="switchTab('reports-page')"><i class="bi bi-file-earmark-pdf me-1"></i> <span data-i18n="reports">ڕاپۆرتەکان</span></button>
+            <select id="themeSelector" class="form-select form-select-sm theme-select" onchange="changeTheme(this.value)">
+                <option value="dark">ڕوکاری دارک</option>
+                <option value="light">ڕوکاری لایت</option>
+                <option value="gov">ڕوکاری فەرمی</option>
+            </select>
+            
+            <!-- ئایکۆن و لیستی گۆڕینی زمان (ڕێکخراو لە تەنیشت یەک) -->
+            <div class="d-flex align-items-center gap-1 bg-secondary px-2 py-1 rounded" style="background-color: rgba(255,255,255,0.08) !important; border: 1px solid #444;">
+                <i class="fas fa-globe text-warning"></i>
+                <select id="languageSelect" class="form-select form-select-sm bg-transparent text-light border-0 shadow-none" onchange="changeLanguage(this.value)" style="cursor: pointer;">
+                    <option value="ckb" class="bg-dark text-light">کوردی (سۆرانی)</option>
+                    <option value="kmr" class="bg-dark text-light">Kurdî (Kurmancî)</option>
+                    <option value="ar" class="bg-dark text-light">العربية</option>
+                    <option value="en" class="bg-dark text-light">English</option>
+                </select>
+            </div>
+        </div>
+        <div class="system-title text-end">
+            <div class="fw-bold fs-6" data-i18n="main_title">سیستەمی شیکاری ئەنجامەکانی هەڵبژاردن</div>
+            <small class="text-muted">بەکارهێنەر: {{ current_user.username }} ({{ current_user.role }})</small>
+        </div>
+    </header>
+
+    <!-- Main Flex Layout: Sidebar Right + Content Left -->
+    <div class="app-container d-flex">
+        
+        <!-- MAIN CONTENT AREA (LEFT SIDE) -->
+        <main class="main-content flex-grow-1 p-3">
+            
+            <!-- 1. DASHBOARD PAGE -->
+            <div id="dashboard-page" class="page-section active">
+                <div class="stations-bar d-flex justify-content-between align-items-center mb-3 p-2 rounded">
+                    <button class="btn-orange-sm" data-bs-toggle="modal" data-bs-target="#addDistrictModal">+ <span data-i18n="add_district">زیادکردنی ناوچە</span></button>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="tab-pill active">ناوچەی یەک</span>
+                        <span class="tab-pill">ناوچەی دوو</span>
+                        <span class="fw-bold text-light me-2"><i class="bi bi-geo-alt me-1"></i> <span data-i18n="districts">ناوچەکان:</span></span>
+                    </div>
+                </div>
+
+                <div class="chart-header-card d-flex justify-content-between align-items-center p-3 mb-3 rounded">
+                    <div class="d-flex gap-2">
+                        <select class="form-select form-select-sm bg-dark text-light border-secondary" id="chartTypeSelector" onchange="changeChartType(this.value)">
+                            <option value="bar">ستوونی (Bar)</option>
+                            <option value="pie">بازنەیی (Pie)</option>
+                            <option value="line">هێڵی (Line)</option>
+                            <option value="doughnut">دۆنەت (Doughnut)</option>
+                        </select>
+                    </div>
+                    <div class="fw-bold text-light"><span data-i18n="chart_analysis">شیکاری و چارتەکانی دەنگدان</span> <i class="bi bi-graph-up-arrow text-warning ms-1"></i></div>
+                </div>
+
+                <!-- Dynamic Live Chart -->
+                <div class="card bg-dark border-secondary p-3 mb-3">
+                    <canvas id="liveElectionChart" height="90"></canvas>
+                </div>
+
+                <!-- Data Entry Form -->
+                <div class="vote-entry-card rounded p-3">
+                    <div class="d-flex justify-content-between align-items-center border-bottom border-secondary pb-3 mb-3">
+                        <div class="d-flex gap-2">
+                            <span class="badge-stat"><span data-i18n="total_sum">کۆی گشتی:</span> <b id="totalVotesText">0</b></span>
+                            <span class="badge-stat"><span data-i18n="valid_votes">دەنگی دروست:</span> <b id="validVotesText">0</b></span>
+                        </div>
+                        <div class="text-end">
+                            <h6 class="fw-bold text-warning mb-1" data-i18n="record_votes">تۆمارکردنی دەنگەکان</h6>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label text-light fw-bold" data-i18n="invalid_votes">دەنگی سووتاو / هەڵوەشاوەکان</label>
+                        <input type="number" id="invalidVotesInput" class="form-control vote-input text-center" value="0" oninput="calculateVotes()">
+                    </div>
+
+                    <div class="parties-list">
+                        {% set parties = [
+                            ('پارتی دیموکراتی کوردستان', '#facc15'),
+                            ('یەکێتی نیشتمانی کوردستان', '#22c55e'),
+                            ('نەوەی نوێ', '#f97316'),
+                            ('یەگرتووی ئیسلامی', '#854d0e'),
+                            ('کۆمەڵی دادگەری', '#c2410c'),
+                            ('بزووتنەوەی گۆڕان', '#a855f7')
+                        ] %}
+                        {% for party, color in parties %}
+                        <div class="party-row d-flex justify-content-between align-items-center mb-2 p-2 rounded">
+                            <input type="number" class="form-control vote-input party-vote-input text-center" value="0" oninput="calculateVotes()">
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="fw-bold text-light party-name">{{ party }}</span>
+                                <span class="color-dot" style="background-color: {{ color }};"></span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. CONTROL PANEL PAGE -->
+            <div id="control-panel-page" class="page-section d-none">
+                <h4 class="text-warning mb-4"><i class="bi bi-gear me-2"></i><span data-i18n="control_panel">کۆنترۆڵ پەناڵی سیستەم</span></h4>
+                {% if current_user.role == 'superadmin' %}
+                <div class="card bg-dark border-secondary p-3 mb-4">
+                    <h5 class="text-light" data-i18n="create_user">دروستکردنی یوزەری نوێ</h5>
+                    <form action="{{ url_for('add_user') }}" method="POST" class="row g-3 mt-1">
+                        <div class="col-md-4">
+                            <input type="text" name="username" class="form-control bg-secondary text-light" placeholder="ناوی بەکارهێنەر" required>
+                        </div>
+                        <div class="col-md-4">
+                            <input type="password" name="password" class="form-control bg-secondary text-light" placeholder="وشەی نهێنی" required>
+                        </div>
+                        <div class="col-md-2">
+                            <select name="role" class="form-select bg-secondary text-light">
+                                <option value="admin">ئەدمین</option>
+                                <option value="viewer">تەنها بینین</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <button type="submit" class="btn btn-warning w-100" data-i18n="create_btn">دروستکردن</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="card bg-dark border-secondary p-3">
+                    <h5 class="text-light mb-3" data-i18n="users_list">لیستی بەکارهێنەران</h5>
+                    <table class="table table-dark table-striped">
+                        <thead>
+                            <tr>
+                                <th data-i18n="th_id">ژمارە</th>
+                                <th data-i18n="th_username">ناوی بەکارهێنەر</th>
+                                <th data-i18n="th_role">ڕۆڵ</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for u in users %}
+                            <tr>
+                                <td>{{ u.id }}</td>
+                                <td>{{ u.username }}</td>
+                                <td><span class="badge bg-warning text-dark">{{ u.role }}</span></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="alert alert-danger" data-i18n="superadmin_alert">تەنها سوپەر ئەدمین مافی دەستکاری کۆنترۆڵ پەناڵی هەیە!</div>
+                {% endif %}
+            </div>
+
+            <!-- 3. REPORTS PAGE -->
+            <div id="reports-page" class="page-section d-none">
+                <h4 class="text-warning mb-4"><i class="bi bi-file-earmark-pdf me-2"></i><span data-i18n="reports">ڕاپۆرتەکان</span></h4>
+                <div class="card bg-dark border-secondary p-4 text-center">
+                    <p class="text-light" data-i18n="reports_desc">لێرەوە دەتوانیت بەپێی خولەکان و لقەکان ڕاپۆرتی PDF دەربکەیت.</p>
+                    <button class="btn btn-warning w-25 mx-auto" onclick="window.print()"><i class="bi bi-printer me-2"></i><span data-i18n="print_btn">چاپکردنی ڕاپۆرت</span></button>
+                </div>
+            </div>
+
+        </main>
+
+        <!-- SIDEBAR (RIGHT SIDE STRICTLY) -->
+        <aside class="sidebar-right p-3">
+            <div class="terms-card p-3 rounded">
+                <div class="d-flex justify-content-between align-items-center text-warning fw-bold mb-3 border-bottom border-secondary pb-2">
+                    <i class="bi bi-calendar3"></i>
+                    <span data-i18n="election_rounds">خولی هەڵبژاردنەکان:</span>
+                </div>
+                
+                <div class="terms-list d-flex flex-column gap-2">
+                    <button class="term-btn active" onclick="switchTab('dashboard-page')">
+                        <i class="bi bi-grid-1x2 me-2"></i> <span data-i18n="general_dashboard">داشبۆردی گشتی</span>
+                    </button>
+
+                    {% for term in terms %}
+                    <div class="term-item-container d-flex align-items-center justify-content-between my-1">
+                        {% if current_user.role != 'viewer' %}
+                        <form action="{{ url_for('delete_term', id=term.id) }}" method="POST" onsubmit="return confirm('دڵنیایت؟')">
+                            <button type="submit" class="btn-icon-del"><i class="bi bi-trash"></i></button>
+                        </form>
+                        {% endif %}
+                        <button class="term-btn text-truncate text-end flex-grow-1" onclick="switchTab('dashboard-page')">
+                            {{ term.title }}
+                        </button>
+                    </div>
+                    {% endfor %}
+
+                    {% if current_user.role != 'viewer' %}
+                    <button class="btn-add-term mt-3" data-bs-toggle="modal" data-bs-target="#addTermModal">
+                        + <span data-i18n="add_new_round">زیادکردنی خولی نوێ</span>
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+        </aside>
+
+    </div>
+
+    <!-- Modal: Add Term -->
+    <div class="modal fade" id="addTermModal" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content bg-dark text-light border-secondary">
+          <form action="{{ url_for('add_term') }}" method="POST">
+            <div class="modal-header">
+              <h5 class="modal-title" data-i18n="add_new_round">زیادکردنی خولی نوێ</h5>
+              <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+              <input type="text" name="title" class="form-control bg-secondary text-light" placeholder="ناوی خول بنووسە..." required>
+            </div>
+            <div class="modal-footer">
+              <button type="submit" class="btn btn-warning" data-i18n="save_btn">تۆمارکردن</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <footer class="footer-custom text-center py-2 text-muted fs-7">
+        دروستکردنی: بەهمەن دەروێش علی
+    </footer>
+
+    <!-- Translation Dictionary & Logic Script -->
+    <script>
+        const translations = {
+            ckb: {
+                main_title: "سیستەمی شیکاری ئەنجامەکانی هەڵبژاردن",
+                reports: "ڕاپۆرتەکان",
+                add_district: "زیادکردنی ناوچە",
+                districts: "ناوچەکان:",
+                chart_analysis: "شیکاری و چارتەکانی دەنگدان",
+                total_sum: "کۆی گشتی:",
+                valid_votes: "دەنگی دروست:",
+                record_votes: "تۆمارکردنی دەنگەکان",
+                invalid_votes: "دەنگی سووتاو / هەڵوەشاوەکان",
+                control_panel: "کۆنترۆڵ پەناڵی سیستەم",
+                create_user: "دروستکردنی یوزەری نوێ",
+                create_btn: "دروستکردن",
+                users_list: "لیستی بەکارهێنەران",
+                th_id: "ژمارە",
+                th_username: "ناوی بەکارهێنەر",
+                th_role: "ڕۆڵ",
+                superadmin_alert: "تەنها سوپەر ئەدمین مافی دەستکاری کۆنترۆڵ پەناڵی هەیە!",
+                reports_desc: "لێرەوە دەتوانیت بەپێی خولەکان و لقەکان ڕاپۆرتی PDF دەربکەیت.",
+                print_btn: "چاپکردنی ڕاپۆرت",
+                election_rounds: "خولی هەڵبژاردنەکان:",
+                general_dashboard: "داشبۆردی گشتی",
+                add_new_round: "زیادکردنی خولی نوێ",
+                save_btn: "تۆمارکردن"
+            },
+            kmr: {
+                main_title: "Sîstema Analîza Enqamên Hilbijartinê",
+                reports: "Raport",
+                add_district: "Zêdekirina Herêmê",
+                districts: "Herêm:",
+                chart_analysis: "Analîz û Grafîkên Dengdanê",
+                total_sum: "Giştî:",
+                valid_votes: "Dengên Derbasdar:",
+                record_votes: "Tomarkirina Dengan",
+                invalid_votes: "Dengên Betal / Hatine Guhertin",
+                control_panel: "Panela Kontrolê ya Sîstemê",
+                create_user: "Çêkirina Bikarhênerek Nû",
+                create_btn: "Çêkirin",
+                users_list: "Lîsteya Bikarhêneran",
+                th_id: "Hejmar",
+                th_username: "Navê Bikarhênêr",
+                th_role: "Rol",
+                superadmin_alert: "Tenê superadmin mafê guhertina panela kontrolê heye!",
+                reports_desc: "Ji vir hûn dikarin li gorî dem û şaxan raportên PDF derxînin.",
+                print_btn: "Çapkirina Raportê",
+                election_rounds: "Demên Hilbijartinê:",
+                general_dashboard: "Dashboard a Giştî",
+                add_new_round: "Zêdekirina Dema Nû",
+                save_btn: "Tomarkirin"
+            },
+            ar: {
+                main_title: "نظام تحليل نتائج الانتخابات",
+                reports: "التقارير",
+                add_district: "إضافة منطقة",
+                districts: "المناطق:",
+                chart_analysis: "تحليل ومخططات التصويت",
+                total_sum: "المجموع الكلي:",
+                valid_votes: "الأصوات الصحيحة:",
+                record_votes: "تسجيل الأصوات",
+                invalid_votes: "الأصوات الباطلة / الملغاة",
+                control_panel: "لوحة تحكم النظام",
+                create_user: "إنشاء مستخدم جديد",
+                create_btn: "إنشاء",
+                users_list: "قائمة المستخدمين",
+                th_id: "الرقم",
+                th_username: "اسم المستخدم",
+                th_role: "الدور",
+                superadmin_alert: "فقط السوبر أدمين لديه صلاحية تعديل لوحة التحكم!",
+                reports_desc: "من هنا يمكنك استخراج تقارير PDF بحسب الدورات والفروع.",
+                print_btn: "طباعة التقرير",
+                election_rounds: "دورات الانتخابات:",
+                general_dashboard: "لوحة التحكم العامة",
+                add_new_round: "إضافة دورة جديدة",
+                save_btn: "حفظ"
+            },
+            en: {
+                main_title: "Election Results Analysis System",
+                reports: "Reports",
+                add_district: "Add District",
+                districts: "Districts:",
+                chart_analysis: "Voting Analysis & Charts",
+                total_sum: "Total Sum:",
+                valid_votes: "Valid Votes:",
+                record_votes: "Record Votes",
+                invalid_votes: "Invalid / Spoiled Votes",
+                control_panel: "System Control Panel",
+                create_user: "Create New User",
+                create_btn: "Create",
+                users_list: "Users List",
+                th_id: "ID",
+                th_username: "Username",
+                th_role: "Role",
+                superadmin_alert: "Only superadmin has permission to modify the control panel!",
+                reports_desc: "From here you can generate PDF reports by rounds and branches.",
+                print_btn: "Print Report",
+                election_rounds: "Election Rounds:",
+                general_dashboard: "General Dashboard",
+                add_new_round: "Add New Round",
+                save_btn: "Save"
+            }
+        };
+
+        function changeLanguage(lang) {
+            localStorage.setItem('selectedLang', lang);
+            applyLang(lang);
+        }
+
+        function applyLang(lang) {
+            const t = translations[lang] || translations['ckb'];
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (t[key]) {
+                    el.innerText = t[key];
+                }
+            });
+
+            if (lang === 'en') {
+                document.documentElement.setAttribute('dir', 'ltr');
+            } else {
+                document.documentElement.setAttribute('dir', 'rtl');
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedLang = localStorage.getItem('selectedLang') || 'ckb';
+            const selectElem = document.getElementById('languageSelect');
+            if (selectElem) {
+                selectElem.value = savedLang;
+            }
+            applyLang(savedLang);
+        });
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>

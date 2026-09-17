@@ -1,0 +1,147 @@
+@font-face {
+    font-family: 'Rudaw';
+    src: url('https://cdn.fontscape.com/fonts/rudaw/Rudaw-Regular.ttf') format('truetype');
+}
+
+$bg-dark: #070a12;
+$card-dark: #0f172a;
+$input-bg: #1e293b;
+$orange-accent: #f97316;
+$yellow-accent: #facc15;
+
+body {
+    background-color: $bg-dark;
+    color: #f8fafc;
+    font-family: 'Rudaw', sans-serif;
+    direction: rtl;
+    margin: 0;
+}
+
+// Top Navigation
+.main-header {
+    background-color: #0b1120;
+    border-bottom: 1px solid #1e293b;
+
+    .btn-top-icon, .theme-select {
+        background: #1e293b;
+        color: #fff;
+        border: 1px solid #334155;
+        border-radius: 8px;
+        padding: 6px 12px;
+    }
+
+    .btn-top-pill {
+        background: $orange-accent;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: 6px 16px;
+        font-weight: bold;
+    }
+}
+
+// Strict RTL Flex Setup (Sidebar on RIGHT)
+.app-container {
+    display: flex;
+    flex-direction: row; // RTL: First child is strictly on the RIGHT!
+    min-height: calc(100vh - 60px);
+}
+
+.sidebar-right {
+    width: 320px;
+    background: #090e1a;
+    border-left: 1px solid #1e293b;
+    flex-shrink: 0;
+}
+
+.main-content {
+    background: $bg-dark;
+}
+
+// Cards & Elements
+.terms-card, .vote-entry-card, .stations-bar, .chart-header-card {
+    background: $card-dark;
+    border: 1px solid #1e293b;
+}
+
+.term-btn {
+    background: #182238;
+    color: #cbd5e1;
+    border: 1px solid #334155;
+    padding: 10px;
+    border-radius: 8px;
+    width: 100%;
+    text-align: right;
+
+    &:hover, &.active {
+        background: #0b1329;
+        color: $yellow-accent;
+        border-color: $yellow-accent;
+    }
+}
+
+.btn-icon-del {
+    background: transparent;
+    border: none;
+    color: #ef4444;
+    padding: 4px 8px;
+}
+
+.btn-add-term {
+    background: #0b1329;
+    color: #fff;
+    border: 1px solid #334155;
+    padding: 10px;
+    border-radius: 8px;
+    width: 100%;
+    font-weight: bold;
+}
+
+.btn-orange-sm {
+    background: $orange-accent;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 6px 14px;
+}
+
+.tab-pill {
+    background: #1e293b;
+    color: #94a3b8;
+    padding: 6px 16px;
+    border-radius: 6px;
+    
+    &.active {
+        background: #334155;
+        color: #fff;
+    }
+}
+
+.badge-stat {
+    background: #1e293b;
+    color: #22c55e;
+    padding: 6px 12px;
+    border-radius: 6px;
+}
+
+.vote-input {
+    background: $input-bg !important;
+    border: 1px solid #334155 !important;
+    color: #fff !important;
+    width: 120px;
+}
+
+.party-row {
+    background: #162032;
+    
+    .color-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+    }
+}
+
+.footer-custom {
+    background: #070a12;
+    border-top: 1px solid #1e293b;
+}

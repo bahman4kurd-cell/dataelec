@@ -1,0 +1,90 @@
+// ==========================================
+// 1. گۆڕاوەکانی SCSS (Variables)
+// ==========================================
+$font-family-main: 'Rudaw', sans-serif;
+$gold-color: #ffd700; // ڕەنگی ئاڵتونی بۆ هەڵبژاردنی حکومی
+$transition-speed: 0.3s;
+
+// بارکردنی فۆنتی ڕووداو
+@font-face {
+    font-family: 'Rudaw';
+    src: url('https://cdn.fontscape.com/fonts/rudaw/Rudaw-Regular.ttf') format('truetype');
+}
+
+// ==========================================
+// 2. تێمەکان و ڕەنگەکانی سیستەم (Themes)
+// ==========================================
+[data-theme="light"] {
+    --bg-main: #f8f9fa;
+    --bg-sidebar: #ffffff;
+    --text-color: #212529;
+    --border-color: #dee2e6;
+}
+
+[data-theme="dark"] {
+    --bg-main: #121212;
+    --bg-sidebar: #1e1e1e;
+    --text-color: #e0e0e0;
+    --border-color: #333333;
+}
+
+[data-theme="gov"] {
+    --bg-main: #f0f4f8;
+    --bg-sidebar: #1a365d;
+    --text-color: #1a365d;
+    --border-color: #cbd5e1;
+
+    // SCSS Nesting: تایبەتمەندی بۆ تیمی حکومی
+    .list-group-item {
+        color: #ffffff !important;
+    }
+
+    .sidebar-heading {
+        color: $gold-color;
+    }
+}
+
+// ==========================================
+// 3. ڕوکار و پێکهاتەی سەرەکی (Body & Components)
+// ==========================================
+body {
+    font-family: $font-family-main;
+    background-color: var(--bg-main);
+    color: var(--text-color);
+    transition: background-color $transition-speed, color $transition-speed;
+}
+
+// بەشی سایدباری ستونی
+.sidebar-bg {
+    background-color: var(--bg-sidebar);
+    border-left: 1px solid var(--border-color);
+    width: 280px;
+    min-height: 100vh;
+}
+
+// هێدەر و فوتەری سەرەکی
+.navbar-custom, 
+.footer-custom {
+    background-color: var(--bg-sidebar);
+    border-color: var(--border-color) !important;
+}
+
+// دیزاینی کارتەکان (Cards)
+.card {
+    &.bg-custom {
+        background-color: var(--bg-sidebar);
+        border-color: var(--border-color);
+        color: var(--text-color);
+    }
+}
+
+// لیستی سایدبار بە هێلانەیی
+.list-group-item {
+    color: var(--text-color) !important;
+    border-color: var(--border-color);
+    transition: opacity $transition-speed;
+
+    &:hover {
+        opacity: 0.8;
+    }
+}

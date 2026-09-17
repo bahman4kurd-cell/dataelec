@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="ku" dir="rtl" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>سیستەمی شیکاری ئەنجامەکانی هەڵبژاردن</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="dark-theme">
+
+    <!-- Top Header -->
+    <header class="main-header d-flex justify-content-between align-items-center px-4 py-2">
+        <div class="d-flex align-items-center gap-2">
+            <a href="{{ url_for('logout') }}" class="btn-top-icon" title="چوونەدەرەوە"><i class="bi bi-box-arrow-right"></i></a>
+            <button class="btn-top-icon" onclick="switchTab('control-panel-page')" title="کۆنترۆڵ پەناڵ"><i class="bi bi-gear"></i></button>
+            <button class="btn-top-pill" onclick="switchTab('reports-page')"><i class="bi bi-file-earmark-pdf me-1"></i> ڕاپۆرتەکان</button>
+            <select id="themeSelector" class="form-select form-select-sm theme-select" onchange="changeTheme(this.value)">
+                <option value="dark">ڕوکاری دارک</option>
+                <option value="light">ڕوکاری لایت</option>
+                <option value="gov">ڕوکاری فەرمی</option>
+            </select>
+        </div>
+        <div class="system-title text-end">
+            <div class="fw-bold fs-6">سیستەمی شیکاری ئەنجامەکانی هەڵبژاردن</div>
+            <small class="text-muted">بەکارهێنەر: {{ current_user.username }} ({{ current_user.role }})</small>
+        </div>
+    </header>
+
+    <!-- Main Flex Layout: Sidebar Right + Content Left -->
+    <div class="app-container d-flex">
+        
+        <!-- MAIN CONTENT AREA (LEFT SIDE) -->
+        <main class="main-content flex-grow-1 p-3">
+            
+            <!-- 1. DASHBOARD PAGE -->
+            <div id="dashboard-page" class="page-section active">
+                <div class="stations-bar d-flex justify-content-between align-items-center mb-3 p-2 rounded">
+                    <button class="btn-orange-sm" data-bs-toggle="modal" data-bs-target="#addDistrictModal">+ زیادکردنی ناوچە</button>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="tab-pill active">ناوچەی یەک</span>
+                        <span class="tab-pill">ناوچەی دوو</span>
+                        <span class="fw-bold text-light me-2"><i class="bi bi-geo-alt me-1"></i> ناوچەکان:</span>
+                    </div>
+                </div>
+
+                <div class="chart-header-card d-flex justify-content-between align-items-center p-3 mb-3 rounded">
+                    <div class="d-flex gap-2">
+                        <select class="form-select form-select-sm bg-dark text-light border-secondary" id="chartTypeSelector" onchange="changeChartType(this.value)">
+                            <option value="bar">ستوونی (Bar)</option>
+                            <option value="pie">بازنەیی (Pie)</option>
+                            <option value="line">هێڵی (Line)</option>
+                            <option value="doughnut">دۆنەت (Doughnut)</option>
+                        </select>
+                    </div>
+                    <div class="fw-bold text-light">شیکاری و چارتەکانی دەنگدان <i class="bi bi-graph-up-arrow text-warning ms-1"></i></div>
+                </div>
+
+                <!-- Dynamic Live Chart -->
+                <div class="card bg-dark border-secondary p-3 mb-3">
+                    <canvas id="liveElectionChart" height="90"></canvas>
+                </div>
+
+                <!-- Data Entry Form -->
+                <div class="vote-entry-card rounded p-3">
+                    <div class="d-flex justify-content-between align-items-center border-bottom border-secondary pb-3 mb-3">
+                        <div class="d-flex gap-2">
+                            <span class="badge-stat">کۆی گشتی: <b id="totalVotesText">0</b></span>
+                            <span class="badge-stat">دەنگی دروست: <b id="validVotesText">0</b></span>
+                        </div>
+                        <div class="text-end">
+                            <h6 class="fw-bold text-warning mb-1">تۆمارکردنی دەنگەکان</h6>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label text-light fw-bold">دەنگی سووتاو / هەڵوەشاوەکان</label>
+                        <input type="number" id="invalidVotesInput" class="form-control vote-input text-center" value="0" oninput="calculateVotes()">
+                    </div>
+
+                    <div class="parties-list">
+                        {% set parties = [
+                            ('پارتی دیموکراتی کوردستان', '#facc15'),
+                            ('یەکێتی نیشتمانی کوردستان', '#22c55e'),
+                            ('نەوەی نوێ', '#f97316'),
+                            ('یەگرتووی ئیسلامی', '#854d0e'),
+                            ('کۆمەڵی دادگەری', '#c2410c'),
+                            ('بزووتنەوەی گۆڕان', '#a855f7')
+                        ] %}
+                        {% for party, color in parties %}
+                        <div class="party-row d-flex justify-content-between align-items-center mb-2 p-2 rounded">
+                            <input type="number" class="form-control vote-input party-vote-input text-center" value="0" oninput="calculateVotes()">
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="fw-bold text-light party-name">{{ party }}</span>
+                                <span class="color-dot" style="background-color: {{ color }};"></span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. CONTROL PANEL PAGE -->
+            <div id="control-panel-page" class="page-section d-none">
+                <h4 class="text-warning mb-4"><i class="bi bi-gear me-2"></i>کۆنترۆڵ پەناڵی سیستەم</h4>
+                {% if current_user.role == 'superadmin' %}
+                <div class="card bg-dark border-secondary p-3 mb-4">
+                    <h5 class="text-light">دروستکردنی یوزەری نوێ</h5>
+                    <form action="{{ url_for('add_user') }}" method="POST" class="row g-3 mt-1">
+                        <div class="col-md-4">
+                            <input type="text" name="username" class="form-control bg-secondary text-light" placeholder="ناوی بەکارهێنەر" required>
+                        </div>
+                        <div class="col-md-4">
+                            <input type="password" name="password" class="form-control bg-secondary text-light" placeholder="وشەی نهێنی" required>
+                        </div>
+                        <div class="col-md-2">
+                            <select name="role" class="form-select bg-secondary text-light">
+                                <option value="admin">ئەدمین</option>
+                                <option value="viewer">تەنها بینین</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <button type="submit" class="btn btn-warning w-100">دروستکردن</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="card bg-dark border-secondary p-3">
+                    <h5 class="text-light mb-3">لیستی بەکارهێنەران</h5>
+                    <table class="table table-dark table-striped">
+                        <thead>
+                            <tr>
+                                <th>ژمارە</th>
+                                <th>ناوی بەکارهێنەر</th>
+                                <th>ڕۆڵ</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for u in users %}
+                            <tr>
+                                <td>{{ u.id }}</td>
+                                <td>{{ u.username }}</td>
+                                <td><span class="badge bg-warning text-dark">{{ u.role }}</span></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="alert alert-danger">تەنها سوپەر ئەدمین مافی دەستکاری کۆنترۆڵ پەناڵی هەیە!</div>
+                {% endif %}
+            </div>
+
+            <!-- 3. REPORTS PAGE -->
+            <div id="reports-page" class="page-section d-none">
+                <h4 class="text-warning mb-4"><i class="bi bi-file-earmark-pdf me-2"></i>ڕاپۆرتەکان</h4>
+                <div class="card bg-dark border-secondary p-4 text-center">
+                    <p class="text-light">لێرەوە دەتوانیت بەپێی خولەکان و لقەکان ڕاپۆرتی PDF دەربکەیت.</p>
+                    <button class="btn btn-warning w-25 mx-auto" onclick="window.print()"><i class="bi bi-printer me-2"></i>چاپکردنی ڕاپۆرت</button>
+                </div>
+            </div>
+
+        </main>
+
+        <!-- SIDEBAR (RIGHT SIDE STRICTLY) -->
+        <aside class="sidebar-right p-3">
+            <div class="terms-card p-3 rounded">
+                <div class="d-flex justify-content-between align-items-center text-warning fw-bold mb-3 border-bottom border-secondary pb-2">
+                    <i class="bi bi-calendar3"></i>
+                    <span>خولی هەڵبژاردنەکان:</span>
+                </div>
+                
+                <div class="terms-list d-flex flex-column gap-2">
+                    <button class="term-btn active" onclick="switchTab('dashboard-page')">
+                        <i class="bi bi-grid-1x2 me-2"></i> داشبۆردی گشتی
+                    </button>
+
+                    {% for term in terms %}
+                    <div class="term-item-container d-flex align-items-center justify-content-between my-1">
+                        {% if current_user.role != 'viewer' %}
+                        <form action="{{ url_for('delete_term', id=term.id) }}" method="POST" onsubmit="return confirm('دڵنیایت؟')">
+                            <button type="submit" class="btn-icon-del"><i class="bi bi-trash"></i></button>
+                        </form>
+                        {% endif %}
+                        <button class="term-btn text-truncate text-end flex-grow-1" onclick="switchTab('dashboard-page')">
+                            {{ term.title }}
+                        </button>
+                    </div>
+                    {% endfor %}
+
+                    {% if current_user.role != 'viewer' %}
+                    <button class="btn-add-term mt-3" data-bs-toggle="modal" data-bs-target="#addTermModal">
+                        + زیادکردنی خولی نوێ
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+        </aside>
+
+    </div>
+
+    <!-- Modal: Add Term -->
+    <div class="modal fade" id="addTermModal" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content bg-dark text-light border-secondary">
+          <form action="{{ url_for('add_term') }}" method="POST">
+            <div class="modal-header">
+              <h5 class="modal-title">زیادکردنی خولی نوێ</h5>
+              <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+              <input type="text" name="title" class="form-control bg-secondary text-light" placeholder="ناوی خول بنووسە..." required>
+            </div>
+            <div class="modal-footer">
+              <button type="submit" class="btn btn-warning">تۆمارکردن</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <footer class="footer-custom text-center py-2 text-muted fs-7">
+        دروستکردنی: بەهمەن دەروێش علی
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="card shadow-sm mb-4 bg-custom">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">داتای هەڵبژاردنی پەرلەمانی کوردستان</h5>
+        <select class="form-select w-25" id="chartType" onchange="updateChartType(this.value)">
+            <option value="bar">سوتونی (Bar)</option>
+            <option value="pie">بازنەیی (Pie)</option>
+            <option value="line">هێڵی (Line)</option>
+            <option value="doughnut">دۆنەت (Doughnut)</option>
+        </select>
+    </div>
+    <div class="card-body">
+        <canvas id="electionChart" height="100"></canvas>
+    </div>
+</div>
+{% endblock %}

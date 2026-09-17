@@ -1,0 +1,66 @@
+@font-face {
+    font-family: 'Rudaw';
+    src: url('https://cdn.fontscape.com/fonts/rudaw/Rudaw-Regular.ttf') format('truetype');
+}
+
+body {
+    font-family: 'Rudaw', sans-serif;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+/* بنچینەی ڕەنگەکان بەپێی تیم */
+[data-theme="light"] {
+    --bg-main: #f8f9fa;
+    --bg-sidebar: #ffffff;
+    --text-color: #212529;
+    --border-color: #dee2e6;
+}
+
+[data-theme="dark"] {
+    --bg-main: #121212;
+    --bg-sidebar: #1e1e1e;
+    --text-color: #e0e0e0;
+    --border-color: #333333;
+}
+
+[data-theme="gov"] {
+    --bg-main: #f0f4f8;
+    --bg-sidebar: #1a365d;
+    --text-color: #1a365d;
+    --border-color: #cbd5e1;
+}
+
+body {
+    background-color: var(--bg-main);
+    color: var(--text-color);
+}
+
+.sidebar-bg {
+    background-color: var(--bg-sidebar);
+    border-left: 1px solid var(--border-color);
+    width: 280px;
+    min-height: 100vh;
+}
+
+.navbar-custom, .footer-custom {
+    background-color: var(--bg-sidebar);
+    border-color: var(--border-color) !important;
+}
+
+.card.bg-custom {
+    background-color: var(--bg-sidebar);
+    border-color: var(--border-color);
+    color: var(--text-color);
+}
+
+.list-group-item {
+    color: var(--text-color) !important;
+    border-color: var(--border-color);
+}
+
+[data-theme="gov"] .list-group-item {
+    color: #ffffff !important;
+}
+[data-theme="gov"] .sidebar-heading {
+    color: #ffd700; /* ڕەنگی ئاڵتونی بۆ فەرمی */
+}
