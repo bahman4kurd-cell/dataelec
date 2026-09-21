@@ -497,7 +497,9 @@ export function App() {
   const [lang, setLang] = useState<LanguageType>('ckb');
   const t = translations[lang];
 
-  const [users, setUsers] = useState<UserAccount[]>([]);
+  const [users, setUsers] = useState<UserAccount[]>([
+    { id: 1, username: 'admin', password: '123456', role: 'super_admin', name: 'بەڕێوەبەری گشتی' }
+  ]);
   const [currentUser, setCurrentUser] = useState<UserAccount | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isStateLoaded, setIsStateLoaded] = useState(false);
@@ -791,7 +793,7 @@ export function App() {
         const response = await fetch(`${API_URL}/api/state`);
         if (!response.ok) throw new Error('Unable to load shared state.');
         const data = await response.json();
-        if (Array.isArray(data.users)) setUsers(data.users);
+        if (Array.isArray(data.users) && data.users.length > 0) setUsers(data.users);
         if (Array.isArray(data.defaultParties)) setDefaultParties(data.defaultParties);
         if (Array.isArray(data.rounds)) setRounds(data.rounds);
         if (Array.isArray(data.branches)) setBranches(data.branches);
