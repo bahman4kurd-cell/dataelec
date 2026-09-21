@@ -2,7 +2,7 @@ services:
   - type: web
     name: dataelec-frontend
     runtime: static
-    buildCommand: npm ci && npm run build
+    buildCommand: npm ci && npx vite build
     staticPublishPath: ./dist
     autoDeployTrigger: commit
     routes:
