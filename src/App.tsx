@@ -18,6 +18,7 @@ import {
   Trash2
 } from 'lucide-react';
 import html2pdf from 'html2pdf.js';
+import { BranchFourMapPreview } from './components/BranchFourMapPreview';
 
 // ناونیشانی باکئیند لەسەر Render
 const API_URL = "https://dataelec.onrender.com";
@@ -675,7 +676,7 @@ export function App() {
     setAuthView('login');
   };
 
-  const [activeMainTab, setActiveMainTab] = useState<'dashboard' | 'rounds' | 'controlPanel' | 'reports'>('dashboard');
+  const [activeMainTab, setActiveMainTab] = useState<'dashboard' | 'rounds' | 'controlPanel' | 'reports' | 'branchMap'>('dashboard');
   
   useEffect(() => {
     if (currentUser?.role === 'viewer' && activeMainTab === 'reports') {
@@ -1622,6 +1623,16 @@ export function App() {
             <span>🗳️</span>
           </button>
 
+          <button
+            onClick={() => setActiveMainTab('branchMap')}
+            className={`w-full text-start px-4 py-3 rounded-lg text-sm font-semibold transition-all flex items-center justify-between ${
+              activeMainTab === 'branchMap' ? 'bg-teal-700 text-white shadow-md' : 'text-[var(--text-primary)] hover:bg-[var(--bg-hover)]'
+            }`}
+          >
+            <span>نەخشەی لق</span>
+            <span>🗺️</span>
+          </button>
+
           {currentUser.role === 'super_admin' && (
             <button
               onClick={() => setActiveMainTab('controlPanel')}
@@ -1952,6 +1963,8 @@ export function App() {
               </div>
             </div>
           )}
+
+          {activeMainTab === 'branchMap' && <BranchFourMapPreview />}
 
           {activeMainTab === 'rounds' && (
             <div className="space-y-6">
