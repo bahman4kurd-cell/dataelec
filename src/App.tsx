@@ -496,29 +496,10 @@ export function App() {
   const [lang, setLang] = useState<LanguageType>('ckb');
   const t = translations[lang];
 
-  const [users, setUsers] = useState<UserAccount[]>(() => {
-    try {
-      const saved = localStorage.getItem('election_users_v4');
-      if (saved) return JSON.parse(saved);
-    } catch (e) {
-      console.error(e);
-    }
-    return [
-      { id: 1, username: 'admin', password: '123456', role: 'super_admin', name: 'بەڕێوەبەری گشتی' }
-    ];
-  });
-
-  const [currentUser, setCurrentUser] = useState<UserAccount | null>(() => {
-    try {
-      const saved = localStorage.getItem('election_current_user_v4');
-      if (saved) return JSON.parse(saved);
-    } catch (e) {
-      console.error(e);
-    }
-    return null;
-  });
-
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(!!currentUser);
+  const [users, setUsers] = useState<UserAccount[]>([]);
+  const [currentUser, setCurrentUser] = useState<UserAccount | null>(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isStateLoaded, setIsStateLoaded] = useState(false);
   const [authView, setAuthView] = useState<'login' | 'forgot'>('login');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -552,15 +533,7 @@ export function App() {
     { partyId: 12, partyName: 'لایەنی تر', color: 'bg-rose-500', hexColor: '#f43f5e' },
   ];
 
-  const [defaultParties, setDefaultParties] = useState<PartyItem[]>(() => {
-    try {
-      const saved = localStorage.getItem('election_default_parties_v4');
-      if (saved) return JSON.parse(saved);
-    } catch (e) {
-      console.error(e);
-    }
-    return initialParties;
-  });
+  const [defaultParties, setDefaultParties] = useState<PartyItem[]>(initialParties);
 
   const [newPartyName, setNewPartyName] = useState('');
   const [newPartyColor, setNewPartyColor] = useState('#3b82f6');
@@ -602,26 +575,10 @@ export function App() {
   };
 
   useEffect(() => {
-    localStorage.setItem('election_default_parties_v4', JSON.stringify(defaultParties));
-  }, [defaultParties]);
-
-  useEffect(() => {
-    localStorage.setItem('election_users_v4', JSON.stringify(users));
-    if (currentUser) {
-      const latestMe = users.find(u => u.id === currentUser.id);
-      if (latestMe) {
-        setCurrentUser(latestMe);
-      }
-    }
-  }, [users]);
-
-  useEffect(() => {
-    if (currentUser) {
-      localStorage.setItem('election_current_user_v4', JSON.stringify(currentUser));
-    } else {
-      localStorage.removeItem('election_current_user_v4');
-    }
-  }, [currentUser]);
+    if (!currentUser) return;
+    const latestMe = users.find(user => user.id === currentUser.id);
+    if (latestMe) setCurrentUser(latestMe);
+  }, [users, currentUser]);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -632,11 +589,6 @@ export function App() {
     if (foundUser) {
       setCurrentUser(foundUser);
       setIsLoggedIn(true);
-      if (rememberMe) {
-        localStorage.setItem('election_saved_username', username);
-      } else {
-        localStorage.removeItem('election_saved_username');
-      }
     } else {
       setLoginError(lang === 'ckb' ? 'ناوی بەکارهێنەر یان وشەی نهێنی هەڵەیە! تکایە دڵنیابەوە لە زانیارییەکان.' : 'Invalid username or password! Please check your credentials.');
     }
@@ -716,8 +668,6 @@ export function App() {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('election_saved_username');
-    localStorage.removeItem('election_current_user_v4');
     setIsLoggedIn(false);
     setCurrentUser(null);
     setUsername('');
@@ -735,25 +685,8 @@ export function App() {
 
   const [theme, setTheme] = useState<ThemeType>('government');
 
-  const [rounds, setRounds] = useState<ElectionRound[]>(() => {
-    try {
-      const saved = localStorage.getItem('election_rounds_v4');
-      if (saved) return JSON.parse(saved);
-    } catch (e) {
-      console.error(e);
-    }
-    return [];
-  });
-
-  const [selectedRoundId, setSelectedRoundId] = useState<number | null>(() => {
-    try {
-      const saved = localStorage.getItem('election_selected_round_v4');
-      if (saved) return JSON.parse(saved);
-    } catch (e) {
-      console.error(e);
-    }
-    return null;
-  });
+  const [rounds, setRounds] = useState<ElectionRound[]>([]);
+  const [selectedRoundId, setSelectedRoundId] = useState<number | null>(null);
   
   const [roundName, setRoundName] = useState('');
   const [roundDate, setRoundDate] = useState('');
@@ -761,87 +694,23 @@ export function App() {
   const [roundVoters, setRoundVoters] = useState('');
   const [editingRoundId, setEditingRoundId] = useState<number | null>(null);
 
-  const [branches, setBranches] = useState<Branch[]>(() => {
-    try {
-      const saved = localStorage.getItem('election_branches_v4');
-      if (saved) return JSON.parse(saved);
-    } catch (e) {
-      console.error(e);
-    }
-    return [];
-  });
+  const [branches, setBranches] = useState<Branch[]>([]);
   const [newBranchName, setNewBranchName] = useState('');
-  const [selectedBranchId, setSelectedBranchId] = useState<number | null>(() => {
-    try {
-      const saved = localStorage.getItem('election_selected_branch_v4');
-      if (saved) return JSON.parse(saved);
-    } catch (e) {
-      console.error(e);
-    }
-    return null;
-  });
+  const [selectedBranchId, setSelectedBranchId] = useState<number | null>(null);
   const [editingBranchId, setEditingBranchId] = useState<number | null>(null);
 
-  const [regions, setRegions] = useState<Region[]>(() => {
-    try {
-      const saved = localStorage.getItem('election_regions_v4');
-      if (saved) return JSON.parse(saved);
-    } catch (e) {
-      console.error(e);
-    }
-    return [];
-  });
+  const [regions, setRegions] = useState<Region[]>([]);
   const [newRegionName, setNewRegionName] = useState('');
-  const [selectedRegionId, setSelectedRegionId] = useState<number | null>(() => {
-    try {
-      const saved = localStorage.getItem('election_selected_region_v4');
-      if (saved) return JSON.parse(saved);
-    } catch (e) {
-      console.error(e);
-    }
-    return null;
-  });
+  const [selectedRegionId, setSelectedRegionId] = useState<number | null>(null);
   const [editingRegionId, setEditingRegionId] = useState<number | null>(null);
 
-  const [regionVotes, setRegionVotes] = useState<{ [regionId: number]: PartyVote[] }>(() => {
-    try {
-      const saved = localStorage.getItem('election_region_votes_v4');
-      if (saved) return JSON.parse(saved);
-    } catch (e) {
-      console.error(e);
-    }
-    return {};
-  });
+  const [regionVotes, setRegionVotes] = useState<{ [regionId: number]: PartyVote[] }>({});
 
-  const [branchVotes, setBranchVotes] = useState<{ [branchId: number]: PartyVote[] }>(() => {
-    try {
-      const saved = localStorage.getItem('election_branch_votes_v4');
-      if (saved) return JSON.parse(saved);
-    } catch (e) {
-      console.error(e);
-    }
-    return {};
-  });
+  const [branchVotes, setBranchVotes] = useState<{ [branchId: number]: PartyVote[] }>({});
 
-  const [branchMeta, setBranchMeta] = useState<{ [branchId: number]: BranchVoteMetaData }>(() => {
-    try {
-      const saved = localStorage.getItem('election_branch_meta_v4');
-      if (saved) return JSON.parse(saved);
-    } catch (e) {
-      console.error(e);
-    }
-    return {};
-  });
+  const [branchMeta, setBranchMeta] = useState<{ [branchId: number]: BranchVoteMetaData }>({});
 
-  const [regionMeta, setRegionMeta] = useState<{ [regionId: number]: BranchVoteMetaData }>(() => {
-    try {
-      const saved = localStorage.getItem('election_region_meta_v4');
-      if (saved) return JSON.parse(saved);
-    } catch (e) {
-      console.error(e);
-    }
-    return {};
-  });
+  const [regionMeta, setRegionMeta] = useState<{ [regionId: number]: BranchVoteMetaData }>({});
 
   const [dashboardChartType, setDashboardChartType] = useState<ChartType>('donut');
   
@@ -851,15 +720,7 @@ export function App() {
   const [dashSelectedRegionIds, setDashSelectedRegionIds] = useState<number[]>([]);
   const [isRegionDropdownOpen, setIsRegionDropdownOpen] = useState(false);
 
-  const [dashSelectedRoundId, setDashSelectedRoundId] = useState<number | null>(() => {
-    try {
-      const saved = localStorage.getItem('election_dash_round_v4');
-      if (saved) return JSON.parse(saved);
-    } catch (e) {
-      console.error(e);
-    }
-    return null;
-  });
+  const [dashSelectedRoundId, setDashSelectedRoundId] = useState<number | null>(null);
 
   const [repSelectedRoundId, setRepSelectedRoundId] = useState<number | null>(null);
   const [repSelectedBranchIds, setRepSelectedBranchIds] = useState<number[]>([]);
@@ -924,44 +785,72 @@ export function App() {
   };
 
   useEffect(() => {
-    localStorage.setItem('election_rounds_v4', JSON.stringify(rounds));
-  }, [rounds]);
+    const loadState = async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/state`);
+        if (!response.ok) throw new Error('Unable to load shared state.');
+        const data = await response.json();
+        if (Array.isArray(data.users)) setUsers(data.users);
+        if (Array.isArray(data.defaultParties)) setDefaultParties(data.defaultParties);
+        if (Array.isArray(data.rounds)) setRounds(data.rounds);
+        if (Array.isArray(data.branches)) setBranches(data.branches);
+        if (Array.isArray(data.regions)) setRegions(data.regions);
+        if (data.regionVotes) setRegionVotes(data.regionVotes);
+        if (data.branchVotes) setBranchVotes(data.branchVotes);
+        if (data.branchMeta) setBranchMeta(data.branchMeta);
+        if (data.regionMeta) setRegionMeta(data.regionMeta);
+        if (typeof data.selectedRoundId === 'number') setSelectedRoundId(data.selectedRoundId);
+        if (typeof data.selectedBranchId === 'number') setSelectedBranchId(data.selectedBranchId);
+        if (typeof data.selectedRegionId === 'number') setSelectedRegionId(data.selectedRegionId);
+        if (typeof data.dashSelectedRoundId === 'number') setDashSelectedRoundId(data.dashSelectedRoundId);
+        setIsStateLoaded(true);
+      } catch (error) {
+        console.error('Unable to load data from Render:', error);
+      }
+    };
+    void loadState();
+  }, []);
 
   useEffect(() => {
-    localStorage.setItem('election_branches_v4', JSON.stringify(branches));
-  }, [branches]);
-
-  useEffect(() => {
-    localStorage.setItem('election_regions_v4', JSON.stringify(regions));
-  }, [regions]);
-
-  useEffect(() => {
-    localStorage.setItem('election_region_votes_v4', JSON.stringify(regionVotes));
-  }, [regionVotes]);
-
-  useEffect(() => {
-    localStorage.setItem('election_branch_votes_v4', JSON.stringify(branchVotes));
-  }, [branchVotes]);
-
-  useEffect(() => {
-    localStorage.setItem('election_branch_meta_v4', JSON.stringify(branchMeta));
-  }, [branchMeta]);
-
-  useEffect(() => {
-    localStorage.setItem('election_region_meta_v4', JSON.stringify(regionMeta));
-  }, [regionMeta]);
-
-  useEffect(() => {
-    if (selectedRoundId !== null) {
-      localStorage.setItem('election_selected_round_v4', JSON.stringify(selectedRoundId));
-    }
-  }, [selectedRoundId]);
-
-  useEffect(() => {
-    if (dashSelectedRoundId !== null) {
-      localStorage.setItem('election_dash_round_v4', JSON.stringify(dashSelectedRoundId));
-    }
-  }, [dashSelectedRoundId]);
+    if (!isStateLoaded) return;
+    const timeoutId = window.setTimeout(() => {
+      void fetch(`${API_URL}/api/state`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          users,
+          defaultParties,
+          rounds,
+          branches,
+          regions,
+          regionVotes,
+          branchVotes,
+          branchMeta,
+          regionMeta,
+          selectedRoundId,
+          selectedBranchId,
+          selectedRegionId,
+          dashSelectedRoundId,
+        }),
+      }).catch(error => console.error('Unable to save data to Render:', error));
+    }, 500);
+    return () => window.clearTimeout(timeoutId);
+  }, [
+    isStateLoaded,
+    users,
+    defaultParties,
+    rounds,
+    branches,
+    regions,
+    regionVotes,
+    branchVotes,
+    branchMeta,
+    regionMeta,
+    selectedRoundId,
+    selectedBranchId,
+    selectedRegionId,
+    dashSelectedRoundId,
+  ]);
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
