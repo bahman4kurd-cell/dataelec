@@ -1,3 +1,25 @@
+import React from 'react';
+
+class MapErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean }> {
+  state = { hasError: false };
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <section className="bg-[var(--bg-card)] border border-red-200 rounded-lg p-5 text-red-800" dir="rtl">
+          نەخشەکە نەتوانرا پیشان بدرێت. تکایە پەڕەکە نوێبکەرەوە.
+        </section>
+      );
+    }
+
+    return this.props.children;
+  }
+}
+
 const boundaryCoordinates: [number, number][] = [
   [45.3557998, 35.9748069], [45.2702812, 35.8463899], [45.345188, 35.799319],
   [45.4026165, 35.7253663], [45.3969985, 35.6670676], [45.3426911, 35.6031436],
@@ -21,7 +43,7 @@ const places = [
 
 const fontFamily = 'Rudaw, "Noto Sans Arabic", Tahoma, "Segoe UI", sans-serif';
 
-export function BranchFourMapPreview() {
+function BranchFourMapContent() {
   const width = 1000;
   const height = 650;
   const padding = 70;
@@ -80,5 +102,13 @@ export function BranchFourMapPreview() {
         لیبڵەکان تەنها بۆ پیشاندانن؛ سنووری فەرمی پێویستی بە پشتڕاستکردنەوەی سەرچاوەی فەرمی هەیە.
       </div>
     </section>
+  );
+}
+
+export function BranchFourMapPreview() {
+  return (
+    <MapErrorBoundary>
+      <BranchFourMapContent />
+    </MapErrorBoundary>
   );
 }
