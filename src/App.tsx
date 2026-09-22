@@ -18,7 +18,6 @@ import {
   Trash2
 } from 'lucide-react';
 import html2pdf from 'html2pdf.js';
-import { BranchFourMapPreview } from './components/BranchFourMapPreview';
 
 // ناونیشانی باکئیند لەسەر Render
 const API_URL = "https://dataelec.onrender.com";
@@ -497,12 +496,12 @@ export function App() {
   const [lang, setLang] = useState<LanguageType>('ckb');
   const t = translations[lang];
 
-  const [users, setUsers] = useState<UserAccount[]>([
-    { id: 1, username: 'admin', password: '123456', role: 'super_admin', name: 'بەڕێوەبەری گشتی' }
-  ]);
+  // بەکارهێنەران تەنها لە داتابەیسی ڕێندەرەوە دێن — هیچ بەکارهێنەرێکی هاردکۆدکراو نییە
+  const [users, setUsers] = useState<UserAccount[]>([]);
   const [currentUser, setCurrentUser] = useState<UserAccount | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isStateLoaded, setIsStateLoaded] = useState(false);
+  const [serverUnreachable, setServerUnreachable] = useState(false);
   const [authView, setAuthView] = useState<'login' | 'forgot'>('login');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -587,11 +586,15 @@ export function App() {
     e.preventDefault();
     setLoginError('');
 
+    if (!isStateLoaded) {
+      setLoginError(lang === 'ckb'
+        ? 'پەیوەندی بە سێرڤەری داتا (Render) سەرکەوتوو نەبووە! بەکارهێنەران تەنها لە داتابەیسی ڕێندەرەوە دێن.'
+        : 'Unable to connect to the data server (Render)! Users come only from the Render database.');
+      return;
+    }
+
     const normalizedUsername = username.trim().toLowerCase();
-    const foundUser = users.find(u => u.username.trim().toLowerCase() === normalizedUsername && u.password === password)
-      ?? (normalizedUsername === 'admin' && password === '123456'
-        ? { id: 1, username: 'admin', password: '123456', role: 'super_admin' as const, name: 'بەڕێوەبەری گشتی' }
-        : undefined);
+    const foundUser = users.find(u => u.username.trim().toLowerCase() === normalizedUsername && u.password === password);
 
     if (foundUser) {
       setCurrentUser(foundUser);
@@ -682,7 +685,7 @@ export function App() {
     setAuthView('login');
   };
 
-  const [activeMainTab, setActiveMainTab] = useState<'dashboard' | 'rounds' | 'controlPanel' | 'reports' | 'branchMap'>('dashboard');
+  const [activeMainTab, setActiveMainTab] = useState<'dashboard' | 'rounds' | 'controlPanel' | 'reports'>('dashboard');
   
   useEffect(() => {
     if (currentUser?.role === 'viewer' && activeMainTab === 'reports') {
@@ -813,6 +816,7 @@ export function App() {
         setIsStateLoaded(true);
       } catch (error) {
         console.error('Unable to load data from Render:', error);
+        setServerUnreachable(true);
       }
     };
     void loadState();
@@ -1379,9 +1383,9 @@ export function App() {
     const options = {
         margin:       10,
         filename:     'election-report.pdf',
-        image:        { type: 'jpeg', quality: 0.98 },
+        image:        { type: 'jpeg' as const, quality: 0.98 },
         html2canvas:  { scale: 2 },
-        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        jsPDF:        { unit: 'mm' as const, format: 'a4' as const, orientation: 'portrait' as const }
     };
 
     if (element) {
@@ -1420,6 +1424,15 @@ export function App() {
                 <h2 className="text-2xl font-bold">{t.loginTitle}</h2>
                 <p className="text-[var(--text-secondary)] text-sm mt-1">{t.loginSubtitle}</p>
               </div>
+
+              {serverUnreachable && (
+                <div className="mb-4 p-3 bg-amber-950/50 border border-amber-700 text-amber-300 rounded-xl text-sm flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  <span>{lang === 'ckb'
+                    ? 'پەیوەندی بە سێرڤەری ڕێندەر سەرکەوتوو نەبووە — هیچ داتایەکی لۆکاڵ بەکارنەهاتووە، تکایە دواتر هەوڵ بدەوە.'
+                    : 'Cannot reach the Render server — no local data is used, please try again later.'}</span>
+                </div>
+              )}
 
               {loginError && (
                 <div className="mb-4 p-3 bg-red-950/50 border border-red-800 text-red-300 rounded-xl text-sm flex items-center gap-2">
@@ -1627,16 +1640,6 @@ export function App() {
           >
             <span>{t.roundsTab}</span>
             <span>🗳️</span>
-          </button>
-
-          <button
-            onClick={() => setActiveMainTab('branchMap')}
-            className={`w-full text-start px-4 py-3 rounded-lg text-sm font-semibold transition-all flex items-center justify-between ${
-              activeMainTab === 'branchMap' ? 'bg-teal-700 text-white shadow-md' : 'text-[var(--text-primary)] hover:bg-[var(--bg-hover)]'
-            }`}
-          >
-            <span>نەخشەی لق</span>
-            <span>🗺️</span>
           </button>
 
           {currentUser.role === 'super_admin' && (
@@ -1964,13 +1967,47 @@ export function App() {
                         ))}
                       </div>
                     )}
+                    {dashSelectedBranchIds.length > 0 && (
+                      <div className="pt-4 border-t border-[var(--border-color)]">
+                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 mb-3">
+                          <h3 className="font-bold text-sm flex items-center gap-2">
+                            <span>🗺️</span>
+                            ماپی سنووری لق دیاری بکە
+                          </h3>
+                          <span className="text-xs text-[var(--text-secondary)]">
+                            {dashSelectedBranchIds
+                              .map(id => branches.find(b => b.id === id)?.name)
+                              .filter(Boolean)
+                              .join('، ')}
+                          </span>
+                        </div>
+                        <p className="text-xs text-[var(--text-secondary)] mb-3">
+                          ئەم ماپە تەنها وەک هێڵکاری/پێشبینینە بۆ سنووری لقە هەڵبژێردراوەکان و پشت دەبەستێت بە گۆگڵ ماپ.
+                        </p>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {dashSelectedBranchIds.map(bid => {
+                            const br = branches.find(b => b.id === bid);
+                            if (!br) return null;
+                            return (
+                              <div key={bid} className="border border-[var(--border-color)] rounded-xl overflow-hidden bg-[var(--bg-main)]">
+                                <div className="px-3 py-2 text-xs font-semibold border-b border-[var(--border-color)]">{br.name}</div>
+                                <iframe
+                                  title={`ماپی سنووری ${br.name}`}
+                                  src={`https://maps.google.com/maps?q=${encodeURIComponent(br.name)}&z=11&output=embed`}
+                                  className="w-full h-56 border-0 pointer-events-none"
+                                  loading="lazy"
+                                ></iframe>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
                   </>
                 )}
               </div>
             </div>
           )}
-
-          {activeMainTab === 'branchMap' && <BranchFourMapPreview />}
 
           {activeMainTab === 'rounds' && (
             <div className="space-y-6">
