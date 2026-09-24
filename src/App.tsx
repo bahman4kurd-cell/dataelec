@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
-  User, 
-  Lock, 
-  Mail, 
+  User,
+  Lock,
+  MessageCircle,
   LogOut, 
   AlertCircle,
   Users,
@@ -523,8 +523,6 @@ export function App() {
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [loginError, setLoginError] = useState('');
-  const [recoveryEmail, setRecoveryEmail] = useState('');
-  const [recoveryMessage, setRecoveryMessage] = useState('');
 
   const [newAccUsername, setNewAccUsername] = useState('');
   const [newAccPassword, setNewAccPassword] = useState('');
@@ -678,19 +676,6 @@ export function App() {
     const updatedUsers = users.map(u => u.id === userId ? { ...u, password: newPass } : u);
     setUsers(updatedUsers);
     alert('پاسوۆردی ئەم بەکارهێنەرە بە سەرکەوتوویی نوێکرایەوە!');
-  };
-
-  const handleForgotPassword = (e: React.FormEvent) => {
-    e.preventDefault();
-    const targetEmail = "bahman4kurd@gmail.com";
-
-    if (recoveryEmail.trim().toLowerCase() === targetEmail) {
-      setRecoveryMessage('پاسۆردی نوێ بە سەرکەوتوویی نێردرا بۆ ئیمەیڵەکەت: ' + targetEmail);
-      setLoginError('');
-    } else {
-      setLoginError('ئەم ئیمەیڵە ناسراو نییە! تکایە (bahman4kurd@gmail.com) بنووسە.');
-      setRecoveryMessage('');
-    }
   };
 
   const handleLogout = () => {
@@ -1584,11 +1569,13 @@ export function App() {
           {authView === 'forgot' && (
             <>
               <div className="text-center mb-6 pt-4">
-                <div className="inline-flex p-3 bg-amber-600/20 text-amber-500 rounded-full mb-3">
-                  <Mail className="w-8 h-8" />
+                <div className="inline-flex p-3 bg-green-600/20 text-green-500 rounded-full mb-3">
+                  <MessageCircle className="w-8 h-8" />
                 </div>
-                <h2 className="text-2xl font-bold">گەڕاندنەوەی پاسۆرد</h2>
-                <p className="text-[var(--text-secondary)] text-sm mt-1">ئیمەیڵی پەیوەندیدار بنووسە (behman4kurd@gmail.com)</p>
+                <h2 className="text-2xl font-bold">لەبیرکردنی وشەی نهێنی</h2>
+                <p className="text-[var(--text-secondary)] text-sm mt-1 leading-relaxed">
+                  بۆ گەڕاندنەوەی وشەی نهێنی، بە ڕێگەی واتس ئەپ پەیوەندی بە بەڕێوەبەری سیستەمەوە بکە و ناوی بەکارهێنەرەکەت پێی بڵێ.
+                </p>
               </div>
 
               {loginError && (
@@ -1597,43 +1584,25 @@ export function App() {
                 </div>
               )}
 
-              {recoveryMessage && (
-                <div className="mb-4 p-3 bg-emerald-950/50 border border-emerald-800 text-emerald-300 rounded-xl text-sm">
-                  {recoveryMessage}
-                </div>
-              )}
-
-              <form onSubmit={handleForgotPassword} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">ناونیشانی ئیمەیڵ</label>
-                  <div className="relative">
-                    <Mail className={`absolute ${lang === 'en' ? 'left-3' : 'right-3'} top-3 w-5 h-5 text-gray-400`} />
-                    <input 
-                      type="email" 
-                      value={recoveryEmail}
-                      onChange={(e) => setRecoveryEmail(e.target.value)}
-                      className={`w-full bg-[var(--bg-main)] border border-[var(--border-color)] rounded-xl ${lang === 'en' ? 'pl-10 pr-4' : 'pr-10 pl-4'} py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none`}
-                      placeholder="bahman4kurd@gmail.com"
-                      required 
-                    />
-                  </div>
-                </div>
-
-                <button 
-                  type="submit" 
-                  className="w-full bg-amber-600 hover:bg-amber-700 text-white font-semibold py-3 rounded-xl text-sm transition duration-200"
+              <div className="space-y-4">
+                <a
+                  href={`https://wa.me/9647501700007?text=${encodeURIComponent('سڵاو، وشەی نهێنیم بۆ هەسابی: ' + (username || '...') + ' لەبیرچووە. تکایە نوێی بکەرەوە.')}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-2 w-full bg-[#25D366] hover:bg-[#1ebe5a] text-white font-semibold py-3 rounded-xl text-sm transition duration-200"
                 >
-                  ناردنی پاسۆرد بۆ ئیمەیڵ
-                </button>
+                  <MessageCircle className="w-5 h-5" />
+                  <span>پەیوەندی بە واتس ئەپ: 0750 170 0007</span>
+                </a>
 
                 <button 
                   type="button" 
-                  onClick={() => { setAuthView('login'); setLoginError(''); setRecoveryMessage(''); }}
+                  onClick={() => { setAuthView('login'); setLoginError(''); }}
                   className="w-full bg-gray-700 hover:bg-gray-600 text-white font-semibold py-2.5 rounded-xl text-sm transition duration-200"
                 >
                   گەڕانەوە بۆ پەڕەی لۆگین
                 </button>
-              </form>
+              </div>
             </>
           )}
         </div>
