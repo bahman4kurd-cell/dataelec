@@ -719,6 +719,7 @@ export function App() {
   const [roundType, setRoundType] = useState('پەرلەمانی');
   const [roundVoters, setRoundVoters] = useState('');
   const [editingRoundId, setEditingRoundId] = useState<number | null>(null);
+  const [copyBranchesFromRoundId, setCopyBranchesFromRoundId] = useState('');
 
   const [branches, setBranches] = useState<Branch[]>([]);
   const [newBranchName, setNewBranchName] = useState('');
@@ -964,6 +965,23 @@ export function App() {
       setSelectedRoundId(newRound.id);
       setDashSelectedRoundId(newRound.id);
       setRepSelectedRoundId(newRound.id);
+
+      if (copyBranchesFromRoundId) {
+        const srcBranches = branches.filter(b => b.roundId === Number(copyBranchesFromRoundId));
+        const stamp = Date.now();
+        const branchIdMap = new Map<number, number>();
+        const clonedBranches: Branch[] = srcBranches.map((b, i) => {
+          const newId = stamp + i + 1;
+          branchIdMap.set(b.id, newId);
+          return { id: newId, roundId: newRound.id, name: b.name };
+        });
+        const clonedRegions: Region[] = regions
+          .filter(rg => branchIdMap.has(rg.branchId))
+          .map((rg, i) => ({ id: stamp + 100000 + i + 1, branchId: branchIdMap.get(rg.branchId)!, name: rg.name }));
+        if (clonedBranches.length > 0) setBranches([...branches, ...clonedBranches]);
+        if (clonedRegions.length > 0) setRegions([...regions, ...clonedRegions]);
+        setCopyBranchesFromRoundId('');
+      }
     }
     setRoundName('');
     setRoundDate('');
@@ -2070,7 +2088,7 @@ export function App() {
                 </div>
 
                 {currentUser.role === 'super_admin' && (
-                  <form onSubmit={handleSaveRound} className="bg-[var(--bg-main)] border border-[var(--border-color)] p-4 rounded-xl grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
+                  <form onSubmit={handleSaveRound} className="bg-[var(--bg-main)] border border-[var(--border-color)] p-4 rounded-xl grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 items-end">
                     <div>
                       <label className="block text-xs font-semibold text-[var(--text-secondary)] mb-1">{t.roundNameHeader}</label>
                       <input
@@ -2114,6 +2132,21 @@ export function App() {
                         placeholder="100000"
                       />
                     </div>
+                    {editingRoundId === null && rounds.length > 0 && (
+                      <div>
+                        <label className="block text-xs font-semibold text-[var(--text-secondary)] mb-1">کۆپی کردنی لق و ناوچەکان لە خولێکی پێوو</label>
+                        <select
+                          value={copyBranchesFromRoundId}
+                          onChange={(e) => setCopyBranchesFromRoundId(e.target.value)}
+                          className="w-full bg-[var(--bg-card)] text-[var(--text-primary)] border border-[var(--border-color)] rounded-lg px-3 py-2 text-sm focus:outline-none"
+                        >
+                          <option value="">بێ کۆپی (لقەکان دووبارە داغڵ بکەرەوە)</option>
+                          {rounds.map(r => (
+                            <option key={r.id} value={r.id}>{r.name} ({r.date})</option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
                     <button
                       type="submit"
                       className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg text-sm transition"
