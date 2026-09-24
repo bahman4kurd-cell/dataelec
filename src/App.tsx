@@ -21,7 +21,7 @@ import {
 // ناونیشانی باکئیند لەسەر Render
 const API_URL = "https://dataelec.onrender.com";
 
-type ThemeType = 'government' | 'dark' | 'light';
+type ThemeType = 'government' | 'dark' | 'light' | 'bee' | 'ocean' | 'sunset';
 type ChartType = 'bars' | 'pie' | 'donut' | 'progress' | 'line' | 'network' | 'radial';
 type UserRole = 'super_admin' | 'branch_admin' | 'viewer';
 type LanguageType = 'ckb' | 'kmr' | 'en' | 'ar' | 'fa';
@@ -96,6 +96,9 @@ const translations = {
     governmentTheme: '🏛️ حکومی',
     darkTheme: '🌙 تۆخ',
     lightTheme: '☀️  ڕۆشن',
+    beeTheme: '🐝 هەنگوین',
+    oceanTheme: '🌊 ئۆقیانوسی',
+    sunsetTheme: '🌇 ڕۆژئاوا',
     logout: 'دەرچوون',
     mainSections: 'بەشە سەرەکییەکان',
     dashboardTab: 'داشبۆرد و هێڵکارییەکان',
@@ -178,6 +181,9 @@ const translations = {
     governmentTheme: '🏛️ تیمێ حکومی',
     darkTheme: '🌙 تیمێ تاری',
     lightTheme: '☀️ تیمێ ڕۆناهی',
+    beeTheme: '🐝 هەنگوین',
+    oceanTheme: '🌊 ئۆقیانوسی',
+    sunsetTheme: '🌇 ڕۆژاڤا',
     logout: 'دەرتن',
     mainSections: 'بەشێن سەرەکی',
     dashboardTab: 'داشبۆرد و نەخشە',
@@ -260,6 +266,9 @@ const translations = {
     governmentTheme: '🏛️ Government',
     darkTheme: '🌙 Dark',
     lightTheme: '☀️ Light',
+    beeTheme: '🐝 Bee',
+    oceanTheme: '🌊 Ocean',
+    sunsetTheme: '🌇 Sunset',
     logout: 'Logout',
     mainSections: 'Main Sections',
     dashboardTab: 'Dashboard & Charts',
@@ -342,6 +351,9 @@ const translations = {
     governmentTheme: '🏛️ حكومي',
     darkTheme: '🌙 داكن',
     lightTheme: '☀️ فاتح',
+    beeTheme: '🐝 عسلي',
+    oceanTheme: '🌊 محيطي',
+    sunsetTheme: '🌇 غروب',
     logout: 'تسجيل الخروج',
     mainSections: 'الأقسام الرئيسية',
     dashboardTab: 'لوحة القيادة والرسوم البيانية',
@@ -424,6 +436,9 @@ const translations = {
     governmentTheme: '🏛️ دولتی',
     darkTheme: '🌙 تاریک',
     lightTheme: '☀️ روشن',
+    beeTheme: '🐝 زنبوری',
+    oceanTheme: '🌊 اقیانوسی',
+    sunsetTheme: '🌇 غروب',
     logout: 'خروج',
     mainSections: 'بخش های اصلی',
     dashboardTab: 'داشبورد و نمودارها',
@@ -1603,6 +1618,9 @@ export function App() {
               <option value="government">{t.governmentTheme}</option>
               <option value="dark">{t.darkTheme}</option>
               <option value="light">{t.lightTheme}</option>
+              <option value="bee">{t.beeTheme}</option>
+              <option value="ocean">{t.oceanTheme}</option>
+              <option value="sunset">{t.sunsetTheme}</option>
             </select>
           </div>
 

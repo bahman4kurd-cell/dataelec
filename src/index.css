@@ -31,6 +31,33 @@
   --border-color: #cbd5e1;
 }
 
+[data-theme="bee"] {
+  --bg-main: #fefce8;
+  --bg-card: #fef9c3;
+  --bg-hover: #fef08a;
+  --text-primary: #1c1917;
+  --text-secondary: #713f12;
+  --border-color: #fde047;
+}
+
+[data-theme="ocean"] {
+  --bg-main: #082032;
+  --bg-card: #0f2c48;
+  --bg-hover: #1a3d5e;
+  --text-primary: #e0f2fe;
+  --text-secondary: #7dd3fc;
+  --border-color: #1e4a6e;
+}
+
+[data-theme="sunset"] {
+  --bg-main: #1c1210;
+  --bg-card: #2b1a15;
+  --bg-hover: #3d251c;
+  --text-primary: #ffedd5;
+  --text-secondary: #fdba74;
+  --border-color: #5c3120;
+}
+
 body {
   margin: 0;
   font-family: Rudaw, "Noto Sans Arabic", Tahoma, "Segoe UI", sans-serif;
