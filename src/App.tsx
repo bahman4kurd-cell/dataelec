@@ -530,6 +530,7 @@ export function App() {
   const [newAccRole, setNewAccRole] = useState<UserRole>('branch_admin');
   const [newAccBranchId, setNewAccBranchId] = useState<number | null>(null);
   const [accSuccessMsg, setAccSuccessMsg] = useState('');
+  const [accErrorMsg, setAccErrorMsg] = useState('');
 
   const [selfNewPassword, setSelfNewPassword] = useState('');
   const [selfPasswordMsg, setSelfPasswordMsg] = useState('');
@@ -621,21 +622,28 @@ export function App() {
   const handleCreateAccount = (e: React.FormEvent) => {
     e.preventDefault();
     setAccSuccessMsg('');
-    setLoginError('');
+    setAccErrorMsg('');
 
-    if (!newAccUsername || !newAccPassword || !newAccName) {
-      setLoginError('تکایە هەموو خانە پێویستەکان پڕبکەرەوە بۆ دروستکردنی ئەکاونت.');
+    const trimmedUsername = newAccUsername.trim();
+
+    if (!trimmedUsername || !newAccPassword || !newAccName.trim()) {
+      setAccErrorMsg('تکایە هەموو خانە پێویستەکان پڕبکەرەوە بۆ دروستکردنی ئەکاونت.');
       return;
     }
 
-    if (users.some(u => u.username.toLowerCase() === newAccUsername.toLowerCase())) {
-      setLoginError('ئەم ناوی بەکارهێنەرە پێشتر هەیە، تکایە یوزەرنەیمێکی تر بەکاربهێنە!');
+    if (users.some(u => u.username.toLowerCase() === trimmedUsername.toLowerCase())) {
+      setAccErrorMsg(`ئەم ناوی بەکارهێنەرە (${trimmedUsername}) پێشتر دروستکراوە! لە خشتەی خوارەوە بیدۆزەرەوە یان ناوێکی تر بەکاربهێنە.`);
+      return;
+    }
+
+    if ((newAccRole === 'branch_admin' || newAccRole === 'viewer') && !newAccBranchId) {
+      setAccErrorMsg('پێویستە لقی پەیوەندیدار هەڵبژێریت بۆ ئەم ئەکاونتە.');
       return;
     }
 
     const newUser: UserAccount = {
       id: Date.now(),
-      username: newAccUsername.trim(),
+      username: trimmedUsername,
       password: newAccPassword,
       name: newAccName.trim(),
       role: newAccRole,
@@ -2518,6 +2526,12 @@ export function App() {
                     </div>
                   )}
 
+                  {accErrorMsg && (
+                    <div className="p-3 bg-red-950/50 border border-red-800 text-red-300 rounded-xl text-sm">
+                      {accErrorMsg}
+                    </div>
+                  )}
+
                   <form onSubmit={handleCreateAccount} className="bg-[var(--bg-main)] border border-[var(--border-color)] p-4 rounded-xl grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 items-end">
                     <div>
                       <label className="block text-xs font-semibold text-[var(--text-secondary)] mb-1">{t.fullNameLabel}</label>
@@ -2577,9 +2591,12 @@ export function App() {
                           required
                         >
                           <option value="">{t.selectBranchPlaceholder}</option>
-                          {branches.map(b => (
-                            <option key={b.id} value={b.id}>{b.name}</option>
-                          ))}
+                          {branches.map(b => {
+                            const bRound = rounds.find(r => r.id === b.roundId);
+                            return (
+                              <option key={b.id} value={b.id}>{b.name}{bRound ? ` — ${bRound.name}` : ''}</option>
+                            );
+                          })}
                         </select>
                       </div>
                     )}
