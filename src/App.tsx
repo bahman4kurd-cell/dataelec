@@ -1702,6 +1702,9 @@ export function App() {
                       <option value="pie">🥧 هێڵکاری بازنەیی</option>
                       <option value="donut">🍩 هێڵکاری دۆنات</option>
                       <option value="progress">📈 ڕێژەی سەدی</option>
+                      <option value="line">📉 هێڵکاری گەشەسەندن</option>
+                      <option value="network">🕸️ هێڵکاری تۆڕی پێشکەوتوو</option>
+                      <option value="radial">🎯 هێڵکاری پەیڤەری و تیشکی</option>
                     </select>
                   </div>
                 </div>
@@ -1915,8 +1918,8 @@ export function App() {
                     )}
 
                     {(dashboardChartType === 'pie' || dashboardChartType === 'donut') && (
-                      <div className="flex flex-col md:flex-row items-center justify-center gap-8 py-6">
-                        <div className="relative w-64 h-64">
+                      <div className="flex flex-col md:flex-row items-center justify-center gap-10 py-8">
+                        <div className="relative w-96 h-96">
                           <svg viewBox="0 0 100 100" className="w-full h-full transform -rotate-90">
                             {createSvgSlices(dashboardData, dashboardChartType === 'donut')}
                           </svg>
@@ -1928,7 +1931,7 @@ export function App() {
                           )}
                         </div>
 
-                        <div className="grid grid-cols-2 gap-2 max-h-64 overflow-y-auto p-2 border border-[var(--border-color)] rounded-xl bg-[var(--bg-main)]">
+                        <div className="grid grid-cols-2 gap-2 max-h-96 overflow-y-auto p-2 border border-[var(--border-color)] rounded-xl bg-[var(--bg-main)]">
                           {dashboardData.map(item => (
                             <div key={item.partyId} className="flex items-center gap-2 text-xs p-1.5 rounded bg-[var(--bg-card)] border border-[var(--border-color)]">
                               <span className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: item.hexColor }}></span>
@@ -1967,39 +1970,70 @@ export function App() {
                         ))}
                       </div>
                     )}
-                    {dashSelectedBranchIds.length > 0 && (
-                      <div className="pt-4 border-t border-[var(--border-color)]">
-                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 mb-3">
-                          <h3 className="font-bold text-sm flex items-center gap-2">
-                            <span>🗺️</span>
-                            ماپی سنووری لق دیاری بکە
-                          </h3>
-                          <span className="text-xs text-[var(--text-secondary)]">
-                            {dashSelectedBranchIds
-                              .map(id => branches.find(b => b.id === id)?.name)
-                              .filter(Boolean)
-                              .join('، ')}
-                          </span>
+                    {dashboardChartType === 'line' && (
+                      <div className="bg-[var(--bg-main)] border border-[var(--border-color)] p-6 rounded-xl space-y-6">
+                        <h4 className="font-bold text-sm text-[var(--text-secondary)]">ڕەوتی هێڵی ڕێژەی دەنگەکان</h4>
+                        <div className="flex items-end justify-around h-64 pt-6 border-b border-x border-[var(--border-color)] px-2 overflow-x-auto relative gap-2">
+                          {dashboardData.map((item) => (
+                            <div key={item.partyName} className="flex flex-col items-center gap-2 h-full justify-end group min-w-[60px]">
+                              <span className="text-xs font-bold text-blue-500">{item.percentage}%</span>
+                              <div
+                                className="w-10 rounded-t-lg border border-gray-300 transition-all duration-500 shadow-md group-hover:opacity-90"
+                                style={{ height: `${Math.max(item.percentage, 10)}%`, backgroundColor: item.hexColor }}
+                              ></div>
+                              <span className="text-[10px] font-semibold text-center mt-2 truncate w-full" title={item.partyName}>{item.partyName}</span>
+                            </div>
+                          ))}
                         </div>
-                        <p className="text-xs text-[var(--text-secondary)] mb-3">
-                          ئەم ماپە تەنها وەک هێڵکاری/پێشبینینە بۆ سنووری لقە هەڵبژێردراوەکان و پشت دەبەستێت بە گۆگڵ ماپ.
-                        </p>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          {dashSelectedBranchIds.map(bid => {
-                            const br = branches.find(b => b.id === bid);
-                            if (!br) return null;
-                            return (
-                              <div key={bid} className="border border-[var(--border-color)] rounded-xl overflow-hidden bg-[var(--bg-main)]">
-                                <div className="px-3 py-2 text-xs font-semibold border-b border-[var(--border-color)]">{br.name}</div>
-                                <iframe
-                                  title={`ماپی سنووری ${br.name}`}
-                                  src={`https://maps.google.com/maps?q=${encodeURIComponent(br.name)}&z=11&output=embed`}
-                                  className="w-full h-56 border-0 pointer-events-none"
-                                  loading="lazy"
-                                ></iframe>
+                      </div>
+                    )}
+
+                    {dashboardChartType === 'network' && (
+                      <div className="bg-[var(--bg-main)] border border-[var(--border-color)] p-6 rounded-xl space-y-6">
+                        <div className="flex items-center justify-between">
+                          <h4 className="font-bold text-sm text-[var(--text-secondary)]">🕸️ پەیوەندی و تۆرکاری دەنگی لایەنەکان</h4>
+                          <span className="text-xs bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-md font-bold">چالاک و ڕاستەقینە</span>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                          {dashboardData.map((item, idx) => (
+                            <div key={item.partyName} className="relative bg-[var(--bg-card)] border-2 border-dashed border-[var(--border-color)] p-5 rounded-2xl flex flex-col items-center text-center gap-3 shadow-sm">
+                              <div className={`absolute -top-3 ${lang === 'en' ? 'end-4' : 'start-4'} px-3 py-0.5 text-xs font-bold text-white rounded-full shadow`} style={{ backgroundColor: item.hexColor }}>
+                                گرێی #{idx + 1}
                               </div>
-                            );
-                          })}
+                              <span className="w-6 h-6 rounded-full border border-gray-300 animate-pulse mt-2" style={{ backgroundColor: item.hexColor }}></span>
+                              <h5 className="font-bold text-sm">{item.partyName}</h5>
+                              <div className="flex items-center gap-2">
+                                <span className="text-xl font-extrabold text-blue-500">{item.votes.toLocaleString()}</span>
+                                <span className="text-xs text-[var(--text-secondary)]">دەنگ</span>
+                              </div>
+                              <div className="w-full bg-[var(--bg-main)] rounded-full h-2 overflow-hidden border border-[var(--border-color)]">
+                                <div className="h-full" style={{ width: `${item.percentage}%`, backgroundColor: item.hexColor }}></div>
+                              </div>
+                              <span className="text-xs font-bold text-[var(--text-secondary)]">پشکی تۆڕ: {item.percentage}%</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {dashboardChartType === 'radial' && (
+                      <div className="bg-[var(--bg-main)] border border-[var(--border-color)] p-6 rounded-xl space-y-6">
+                        <h4 className="font-bold text-sm text-[var(--text-secondary)]">🎯 پەیڤەری پێوانەیی تیشکی و بازنەیی</h4>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                          {dashboardData.map(item => (
+                            <div key={item.partyName} className="bg-[var(--bg-card)] border border-[var(--border-color)] p-6 rounded-2xl flex flex-col items-center justify-center text-center gap-4 shadow-sm">
+                              <span className="w-3.5 h-3.5 rounded-full border border-gray-300" style={{ backgroundColor: item.hexColor }}></span>
+                              <h5 className="font-bold text-sm">{item.partyName}</h5>
+                              <div className="relative w-32 h-32 rounded-full border-8 border-[var(--border-color)] flex items-center justify-center shadow-inner">
+                                <div className="absolute inset-0 rounded-full border-8 opacity-30" style={{ borderColor: item.hexColor }}></div>
+                                <div className="flex flex-col items-center">
+                                  <span className="text-2xl font-extrabold">{item.percentage}%</span>
+                                  <span className="text-[10px] text-[var(--text-secondary)]">ڕێژەی کێبڕکێ</span>
+                                </div>
+                              </div>
+                              <p className="text-xs font-bold text-[var(--text-secondary)]">{item.votes.toLocaleString()} دەنگی بەدەستهاتوو</p>
+                            </div>
+                          ))}
                         </div>
                       </div>
                     )}
