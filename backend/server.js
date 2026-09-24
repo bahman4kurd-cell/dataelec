@@ -10,7 +10,7 @@ const app = express();
 
 // ڕێگەپێدانی CORS و JSON
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '5mb' }));
 
 // ڕێکخستنی داتابەیس
 const pool = new pg.Pool({
