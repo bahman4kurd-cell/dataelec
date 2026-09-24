@@ -58,9 +58,40 @@
   --border-color: #5c3120;
 }
 
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+html,
+body,
+#root {
+  max-width: 100%;
+}
+
 body {
   margin: 0;
   font-family: Rudaw, "Noto Sans Arabic", Tahoma, "Segoe UI", sans-serif;
   background-color: var(--bg-main);
   color: var(--text-primary);
+}
+
+#root {
+  min-height: 100dvh;
+}
+
+@media (max-width: 767px) {
+  input,
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
+@media print {
+  html,
+  body,
+  #root {
+    overflow: visible !important;
+    height: auto !important;
+  }
 }

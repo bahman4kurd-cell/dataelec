@@ -1412,10 +1412,15 @@ export function App() {
 
   const getDir = () => (lang === 'en' ? 'ltr' : 'rtl');
 
+  const navClass = (isActive: boolean, activeColor = 'bg-blue-600') =>
+    `shrink-0 md:w-full text-start px-2.5 py-2 md:px-4 md:py-3 rounded-lg text-[10px] sm:text-[11px] md:text-sm font-semibold transition-all flex items-center justify-center md:justify-between gap-1 max-md:flex-col-reverse max-md:min-w-[4.4rem] max-md:max-w-[7.25rem] ${
+      isActive ? `${activeColor} text-white shadow-md` : 'text-[var(--text-primary)] hover:bg-[var(--bg-hover)]'
+    }`;
+
   if (!isLoggedIn || !currentUser) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[var(--bg-main)] text-[var(--text-primary)] p-4" dir={getDir()}>
-        <div className="bg-[var(--bg-card)] border border-[var(--border-color)] shadow-2xl rounded-2xl p-8 w-full max-w-md relative">
+      <div className="min-h-dvh flex items-center justify-center bg-[var(--bg-main)] text-[var(--text-primary)] p-4" dir={getDir()}>
+        <div className="bg-[var(--bg-card)] border border-[var(--border-color)] shadow-2xl rounded-2xl p-5 sm:p-8 w-full max-w-md relative">
           
           <div className="absolute top-4 left-4 flex items-center gap-1.5 bg-[var(--bg-main)] border border-[var(--border-color)] rounded-xl px-2 py-1 shadow-sm">
             <Globe className="w-4 h-4 text-blue-500" />
@@ -1493,7 +1498,7 @@ export function App() {
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between text-sm">
+                <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
                   <label className="flex items-center gap-2 cursor-pointer text-[var(--text-secondary)]">
                     <input 
                       type="checkbox" 
@@ -1584,27 +1589,27 @@ export function App() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-[var(--bg-main)] text-[var(--text-primary)] transition-colors duration-200" dir={getDir()}>
-      <header className="h-16 bg-[var(--bg-card)] border-b border-[var(--border-color)] px-6 flex items-center justify-between shadow-md print:hidden">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-lg bg-blue-600 flex items-center justify-center font-bold text-white text-lg">
+    <div className="h-dvh min-h-dvh max-w-full overflow-hidden flex flex-col bg-[var(--bg-main)] text-[var(--text-primary)] transition-colors duration-200 print:h-auto print:overflow-visible" dir={getDir()}>
+      <header className="shrink-0 z-30 min-h-14 bg-[var(--bg-card)] border-b border-[var(--border-color)] px-3 md:px-6 py-2 flex flex-wrap items-center justify-between gap-x-3 gap-y-2 shadow-md print:hidden">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+          <div className="w-9 h-9 shrink-0 rounded-lg bg-blue-600 flex items-center justify-center font-bold text-white text-lg">
             📊
           </div>
-          <div>
-            <h1 className="text-base font-bold">{t.systemTitle}</h1>
-            <p className="text-xs text-[var(--text-secondary)]">
+          <div className="min-w-0">
+            <h1 className="text-sm sm:text-base font-bold truncate">{t.systemTitle}</h1>
+            <p className="text-xs text-[var(--text-secondary)] truncate">
               {t.userLabel} <span className="font-bold text-blue-500">{currentUser.name}</span> ({currentUser.role === 'super_admin' ? t.superAdmin : currentUser.role === 'branch_admin' ? t.branchAdmin : t.viewer})
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2 bg-[var(--bg-main)] border border-[var(--border-color)] px-3 py-1.5 rounded-lg shadow-sm">
-            <Globe className="w-4 h-4 text-blue-500" />
+        <div className="flex items-center gap-2 md:gap-4 flex-wrap">
+          <div className="flex items-center gap-2 bg-[var(--bg-main)] border border-[var(--border-color)] px-2 sm:px-3 py-1.5 rounded-lg shadow-sm">
+            <Globe className="w-4 h-4 text-blue-500 shrink-0" />
             <select
               value={lang}
               onChange={(e) => setLang(e.target.value as LanguageType)}
-              className="bg-transparent text-sm font-semibold focus:outline-none cursor-pointer"
+              className="bg-transparent text-xs sm:text-sm font-semibold focus:outline-none cursor-pointer max-w-[9.5rem] sm:max-w-none"
             >
               <option value="ckb">کوردی (سۆرانی)</option>
               <option value="kmr">کوردی (کرمانجی)</option>
@@ -1615,11 +1620,11 @@ export function App() {
           </div>
 
           <div className="flex items-center gap-2">
-            <label className="text-sm text-[var(--text-secondary)] font-medium">{t.themeLabel}</label>
+            <label className="text-sm text-[var(--text-secondary)] font-medium hidden md:inline">{t.themeLabel}</label>
             <select
               value={theme}
               onChange={(e) => setTheme(e.target.value as ThemeType)}
-              className="bg-[var(--bg-main)] text-[var(--text-primary)] border border-[var(--border-color)] rounded-md px-3 py-1.5 text-sm font-medium focus:outline-none"
+              className="bg-[var(--bg-main)] text-[var(--text-primary)] border border-[var(--border-color)] rounded-md px-2 sm:px-3 py-1.5 text-xs sm:text-sm font-medium focus:outline-none max-w-[10.5rem] sm:max-w-none"
             >
               <option value="government">{t.governmentTheme}</option>
               <option value="dark">{t.darkTheme}</option>
@@ -1632,48 +1637,42 @@ export function App() {
 
           <button 
             onClick={handleLogout}
-            className="flex items-center gap-2 bg-red-600/20 hover:bg-red-600 text-red-400 hover:text-white px-3 py-1.5 rounded-lg text-sm font-semibold transition border border-red-800/40"
+            className="flex items-center gap-2 bg-red-600/20 hover:bg-red-600 text-red-400 hover:text-white px-2.5 sm:px-3 py-1.5 rounded-lg text-sm font-semibold transition border border-red-800/40"
           >
             <LogOut className="w-4 h-4" />
-            <span>{t.logout}</span>
+            <span className="hidden sm:inline">{t.logout}</span>
           </button>
         </div>
       </header>
 
-      <div className="flex flex-1 overflow-hidden">
-        <aside className="w-64 bg-[var(--bg-card)] border-e border-[var(--border-color)] p-4 flex flex-col gap-2 shadow-sm print:hidden">
-          <span className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider px-2 mb-1">
+      <div className="flex flex-col md:flex-row flex-1 min-h-0 overflow-hidden">
+        <aside className="order-2 md:order-1 w-full md:w-64 shrink-0 bg-[var(--bg-card)] border-t md:border-t-0 md:border-e border-[var(--border-color)] p-2 md:p-4 flex flex-row md:flex-col gap-1.5 md:gap-2 shadow-[0_-4px_12px_rgba(0,0,0,0.08)] md:shadow-sm print:hidden overflow-x-auto md:overflow-x-visible pb-[max(0.5rem,env(safe-area-inset-bottom))]">
+          <span className="hidden md:block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider px-2 mb-1">
             {t.mainSections}
           </span>
 
           <button
             onClick={() => setActiveMainTab('dashboard')}
-            className={`w-full text-start px-4 py-3 rounded-lg text-sm font-semibold transition-all flex items-center justify-between ${
-              activeMainTab === 'dashboard' ? 'bg-blue-600 text-white shadow-md' : 'text-[var(--text-primary)] hover:bg-[var(--bg-hover)]'
-            }`}
+            className={navClass(activeMainTab === 'dashboard')}
           >
-            <span>{t.dashboardTab}</span>
+            <span className="max-md:line-clamp-2 max-md:text-center">{t.dashboardTab}</span>
             <span>🏠</span>
           </button>
 
           <button
             onClick={() => setActiveMainTab('rounds')}
-            className={`w-full text-start px-4 py-3 rounded-lg text-sm font-semibold transition-all flex items-center justify-between ${
-              activeMainTab === 'rounds' ? 'bg-blue-600 text-white shadow-md' : 'text-[var(--text-primary)] hover:bg-[var(--bg-hover)]'
-            }`}
+            className={navClass(activeMainTab === 'rounds')}
           >
-            <span>{t.roundsTab}</span>
+            <span className="max-md:line-clamp-2 max-md:text-center">{t.roundsTab}</span>
             <span>🗳️</span>
           </button>
 
           {currentUser.role === 'super_admin' && (
             <button
               onClick={() => setActiveMainTab('controlPanel')}
-              className={`w-full text-start px-4 py-3 rounded-lg text-sm font-semibold transition-all flex items-center justify-between ${
-                activeMainTab === 'controlPanel' ? 'bg-amber-600 text-white shadow-md' : 'text-[var(--text-primary)] hover:bg-[var(--bg-hover)]'
-              }`}
+              className={navClass(activeMainTab === 'controlPanel', 'bg-amber-600')}
             >
-              <span>{t.controlPanelTab}</span>
+              <span className="max-md:line-clamp-2 max-md:text-center">{t.controlPanelTab}</span>
               <span>⚙️</span>
             </button>
           )}
@@ -1681,11 +1680,9 @@ export function App() {
           {currentUser.role !== 'viewer' && (
             <button
               onClick={() => setActiveMainTab('reports')}
-              className={`w-full text-start px-4 py-3 rounded-lg text-sm font-semibold transition-all flex items-center justify-between ${
-                activeMainTab === 'reports' ? 'bg-emerald-600 text-white shadow-md' : 'text-[var(--text-primary)] hover:bg-[var(--bg-hover)]'
-              }`}
+              className={navClass(activeMainTab === 'reports', 'bg-emerald-600')}
             >
-              <span>{t.reportsTab}</span>
+              <span className="max-md:line-clamp-2 max-md:text-center">{t.reportsTab}</span>
               <span>📑</span>
             </button>
           )}
@@ -1693,34 +1690,32 @@ export function App() {
           {currentUser.role === 'branch_admin' && (
             <button
               onClick={() => setActiveMainTab('controlPanel')}
-              className={`w-full text-start px-4 py-3 rounded-lg text-sm font-semibold transition-all flex items-center justify-between ${
-                activeMainTab === 'controlPanel' ? 'bg-blue-600 text-white shadow-md' : 'text-[var(--text-primary)] hover:bg-[var(--bg-hover)]'
-              }`}
+              className={navClass(activeMainTab === 'controlPanel')}
             >
-              <span>{t.myPasswordTab}</span>
+              <span className="max-md:line-clamp-2 max-md:text-center">{t.myPasswordTab}</span>
               <span>🔑</span>
             </button>
           )}
         </aside>
 
-        <main className="flex-1 p-6 overflow-y-auto space-y-6">
+        <main className="order-1 md:order-2 flex-1 min-h-0 min-w-0 p-3 md:p-6 overflow-y-auto overflow-x-hidden space-y-6">
           {activeMainTab === 'dashboard' && (
             <div className="space-y-6">
-              <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-xl p-6 shadow-sm space-y-6">
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-[var(--border-color)] pb-4">
-                  <div>
-                    <h2 className="text-xl font-bold">{t.dashboardHeading}</h2>
-                    <p className="text-sm text-[var(--text-secondary)] mt-1">
+              <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-xl p-4 sm:p-6 shadow-sm space-y-6">
+                <div className="flex flex-col md:flex-row justify-between items-stretch md:items-center gap-4 border-b border-[var(--border-color)] pb-4">
+                  <div className="min-w-0">
+                    <h2 className="text-lg sm:text-xl font-bold">{t.dashboardHeading}</h2>
+                    <p className="text-sm text-[var(--text-secondary)] mt-1 break-words">
                       {dashSelectedRoundObj ? `${t.selectedRound} ${dashSelectedRoundObj.name} (${dashSelectedRoundObj.date})` : t.noRoundSelected}
                     </p>
                   </div>
 
-                  <div className="flex items-center gap-3">
-                    <label className="text-sm font-medium text-[var(--text-secondary)]">{t.chartTypeLabel}</label>
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 w-full md:w-auto">
+                    <label className="text-sm font-medium text-[var(--text-secondary)] shrink-0">{t.chartTypeLabel}</label>
                     <select
                       value={dashboardChartType}
                       onChange={(e) => setDashboardChartType(e.target.value as ChartType)}
-                      className="bg-[var(--bg-main)] text-[var(--text-primary)] border border-[var(--border-color)] rounded-lg px-3 py-2 text-sm font-semibold focus:outline-none"
+                      className="w-full md:w-auto bg-[var(--bg-main)] text-[var(--text-primary)] border border-[var(--border-color)] rounded-lg px-3 py-2 text-sm font-semibold focus:outline-none"
                     >
                       <option value="bars">📊 هێڵکاری ستوونی</option>
                       <option value="pie">🥧 هێڵکاری بازنەیی</option>
@@ -1739,7 +1734,7 @@ export function App() {
                   </div>
                 ) : (
                   <>
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 bg-[var(--bg-main)] p-4 rounded-xl border border-[var(--border-color)]">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 bg-[var(--bg-main)] p-3 sm:p-4 rounded-xl border border-[var(--border-color)]">
                       <div>
                         <label className="block text-xs font-semibold text-[var(--text-secondary)] mb-1">خولی هەڵبژاردن</label>
                         <select
@@ -1914,21 +1909,21 @@ export function App() {
                       </div>
                     </div>
 
-                    <div className="flex items-center justify-between bg-blue-600/10 border border-blue-600/30 px-4 py-3 rounded-xl">
+                    <div className="flex flex-wrap items-center justify-between gap-2 bg-blue-600/10 border border-blue-600/30 px-3 sm:px-4 py-3 rounded-xl">
                       <span className="font-semibold text-sm">{t.totalVotesLabel}</span>
-                      <span className="text-lg font-bold text-blue-500">{totalDashboardVotes.toLocaleString()} دەنگ</span>
+                      <span className="text-base sm:text-lg font-bold text-blue-500">{totalDashboardVotes.toLocaleString()} دەنگ</span>
                     </div>
 
                     {dashboardChartType === 'bars' && (
                       <div className="space-y-3 pt-4">
                         {dashboardData.map(item => (
                           <div key={item.partyId} className="space-y-1">
-                            <div className="flex justify-between text-xs font-semibold">
-                              <span className="flex items-center gap-2">
-                                <span className="w-3 h-3 rounded-full inline-block" style={{ backgroundColor: item.hexColor }}></span>
-                                {item.partyName}
+                            <div className="flex flex-wrap justify-between gap-x-3 gap-y-1 text-xs font-semibold">
+                              <span className="flex items-center gap-2 min-w-0">
+                                <span className="w-3 h-3 rounded-full inline-block shrink-0" style={{ backgroundColor: item.hexColor }}></span>
+                                <span className="break-words">{item.partyName}</span>
                               </span>
-                              <span>{item.votes.toLocaleString()} دەنگ ({item.percentage}%)</span>
+                              <span className="shrink-0">{item.votes.toLocaleString()} دەنگ ({item.percentage}%)</span>
                             </div>
                             <div className="w-full bg-[var(--bg-main)] h-3 rounded-full overflow-hidden border border-[var(--border-color)]">
                               <div 
@@ -1942,8 +1937,8 @@ export function App() {
                     )}
 
                     {(dashboardChartType === 'pie' || dashboardChartType === 'donut') && (
-                      <div className="flex flex-col md:flex-row items-center justify-center gap-10 py-8">
-                        <div className="relative w-96 h-96">
+                      <div className="flex flex-col lg:flex-row items-center justify-center gap-6 md:gap-10 py-4 sm:py-8">
+                        <div className="relative w-56 h-56 sm:w-80 sm:h-80 md:w-96 md:h-96 max-w-full">
                           <svg viewBox="0 0 100 100" className="w-full h-full transform -rotate-90">
                             {createSvgSlices(dashboardData, dashboardChartType === 'donut')}
                           </svg>
@@ -2069,13 +2064,13 @@ export function App() {
 
           {activeMainTab === 'rounds' && (
             <div className="space-y-6">
-              <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-xl p-6 shadow-sm space-y-6">
+              <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-xl p-4 sm:p-6 shadow-sm space-y-6">
                 <div className="flex justify-between items-center border-b border-[var(--border-color)] pb-4">
-                  <h2 className="text-xl font-bold">{t.roundsTab}</h2>
+                  <h2 className="text-lg sm:text-xl font-bold">{t.roundsTab}</h2>
                 </div>
 
                 {currentUser.role === 'super_admin' && (
-                  <form onSubmit={handleSaveRound} className="bg-[var(--bg-main)] border border-[var(--border-color)] p-4 rounded-xl grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
+                  <form onSubmit={handleSaveRound} className="bg-[var(--bg-main)] border border-[var(--border-color)] p-4 rounded-xl grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
                     <div>
                       <label className="block text-xs font-semibold text-[var(--text-secondary)] mb-1">{t.roundNameHeader}</label>
                       <input
@@ -2128,8 +2123,8 @@ export function App() {
                   </form>
                 )}
 
-                <div className="overflow-x-auto">
-                  <table className="w-full text-start border-collapse">
+                <div className="overflow-x-auto -mx-1 px-1">
+                  <table className="w-full min-w-[640px] text-start border-collapse">
                     <thead>
                       <tr className="bg-[var(--bg-main)] border-b border-[var(--border-color)] text-xs text-[var(--text-secondary)]">
                         <th className="p-3 text-start">{t.roundNameHeader}</th>
@@ -2146,7 +2141,8 @@ export function App() {
                           <td className="p-3 text-[var(--text-secondary)]">{r.date}</td>
                           <td className="p-3">{r.type}</td>
                           <td className="p-3">{r.totalVoters.toLocaleString()}</td>
-                          <td className="p-3 text-center flex items-center justify-center gap-2">
+                          <td className="p-3 text-center">
+                            <div className="flex flex-wrap items-center justify-center gap-2">
                             <button
                               onClick={() => { setSelectedRoundId(r.id); setActiveMainTab('dashboard'); }}
                               className="bg-blue-600/20 text-blue-400 hover:bg-blue-600 hover:text-white px-3 py-1 rounded text-xs font-semibold transition"
@@ -2169,6 +2165,7 @@ export function App() {
                                 </button>
                               </>
                             )}
+                            </div>
                           </td>
                         </tr>
                       ))}
@@ -2183,14 +2180,14 @@ export function App() {
               </div>
 
               {selectedRoundId && (
-                <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-xl p-6 shadow-sm space-y-6">
+                <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-xl p-4 sm:p-6 shadow-sm space-y-6">
                   <div className="border-b border-[var(--border-color)] pb-4">
-                    <h3 className="text-lg font-bold">بەڕێوەبردنی لقەکان و ناوچەکان بۆ خولی: {currentRound?.name}</h3>
+                    <h3 className="text-base sm:text-lg font-bold break-words">بەڕێوەبردنی لقەکان و ناوچەکان بۆ خولی: {currentRound?.name}</h3>
                   </div>
 
                   {currentUser.role === 'super_admin' && (
-                    <form onSubmit={handleSaveBranch} className="bg-[var(--bg-main)] border border-[var(--border-color)] p-4 rounded-xl flex gap-4 items-end">
-                      <div className="flex-1">
+                    <form onSubmit={handleSaveBranch} className="bg-[var(--bg-main)] border border-[var(--border-color)] p-4 rounded-xl flex flex-col sm:flex-row gap-3 sm:gap-4 items-stretch sm:items-end">
+                      <div className="flex-1 min-w-0">
                         <label className="block text-xs font-semibold text-[var(--text-secondary)] mb-1">ناوی لقی نوێ</label>
                         <input
                           type="text"
@@ -2203,15 +2200,15 @@ export function App() {
                       </div>
                       <button
                         type="submit"
-                        className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg text-sm transition"
+                        className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg text-sm transition w-full sm:w-auto"
                       >
                         {editingBranchId !== null ? t.updateBtn : t.addBranchBtn}
                       </button>
                     </form>
                   )}
 
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="space-y-2 border-e border-[var(--border-color)] pe-4">
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div className="space-y-2 lg:border-e border-[var(--border-color)] lg:pe-4">
                       <h4 className="text-sm font-bold text-[var(--text-secondary)]">لیستی لقەکان</h4>
                       <div className="space-y-1 max-h-80 overflow-y-auto">
                         {currentBranches.map(b => (
@@ -2236,22 +2233,22 @@ export function App() {
                       </div>
                     </div>
 
-                    <div className="md:col-span-2 space-y-4">
+                    <div className="lg:col-span-2 space-y-4">
                       {selectedBranchId ? (
                         <>
-                          <div className="flex justify-between items-center border-b border-[var(--border-color)] pb-3">
+                          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 border-b border-[var(--border-color)] pb-3">
                             <h4 className="font-bold text-sm">ناوچەکانی لقی هەڵبژاردراو</h4>
                             {currentUser.role !== 'viewer' && (
-                              <form onSubmit={handleSaveRegion} className="flex gap-2">
+                              <form onSubmit={handleSaveRegion} className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
                                 <input
                                   type="text"
                                   value={newRegionName}
                                   onChange={(e) => setNewRegionName(e.target.value)}
-                                  className="bg-[var(--bg-main)] border border-[var(--border-color)] rounded-lg px-3 py-1.5 text-xs focus:outline-none"
+                                  className="bg-[var(--bg-main)] border border-[var(--border-color)] rounded-lg px-3 py-1.5 text-xs focus:outline-none w-full sm:w-auto"
                                   placeholder={t.newRegionPlaceholder}
                                   required
                                 />
-                                <button type="submit" className="bg-emerald-600 text-white px-3 py-1.5 rounded-lg text-xs font-semibold">
+                                <button type="submit" className="bg-emerald-600 text-white px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap">
                                   {t.addRegionBtn}
                                 </button>
                               </form>
@@ -2297,17 +2294,17 @@ export function App() {
 
                               <div className="space-y-2 max-h-60 overflow-y-auto">
                                 {currentBranchVotes.map(item => (
-                                  <div key={item.partyId} className="flex items-center justify-between gap-4 bg-[var(--bg-card)] p-2 rounded-lg border border-[var(--border-color)]">
-                                    <div className="flex items-center gap-2">
-                                      <span className="w-3 h-3 rounded-full" style={{ backgroundColor: item.hexColor }}></span>
-                                      <span className="text-xs font-semibold">{item.partyName}</span>
+                                  <div key={item.partyId} className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-[var(--bg-card)] p-2 rounded-lg border border-[var(--border-color)]">
+                                    <div className="flex items-center gap-2 min-w-0">
+                                      <span className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: item.hexColor }}></span>
+                                      <span className="text-xs font-semibold break-words">{item.partyName}</span>
                                     </div>
                                     <div className="flex items-center gap-2">
                                       <input
                                         type="number"
                                         value={item.votes || ''}
                                         onChange={(e) => handleBranchVoteChange(selectedBranchId, item.partyId, Number(e.target.value))}
-                                        className="w-24 bg-[var(--bg-main)] border border-[var(--border-color)] rounded px-2 py-1 text-xs text-center font-bold focus:outline-none"
+                                        className="w-full sm:w-24 bg-[var(--bg-main)] border border-[var(--border-color)] rounded px-2 py-1 text-xs text-center font-bold focus:outline-none"
                                         disabled={currentUser?.role === 'viewer'}
                                       />
                                       <span className="text-xs text-[var(--text-secondary)] w-12 text-end">{item.percentage}%</span>
@@ -2377,17 +2374,17 @@ export function App() {
 
                                   <div className="space-y-2 max-h-60 overflow-y-auto">
                                     {currentRegionVotes.map(item => (
-                                      <div key={item.partyId} className="flex items-center justify-between gap-4 bg-[var(--bg-card)] p-2 rounded-lg border border-[var(--border-color)]">
-                                        <div className="flex items-center gap-2">
-                                          <span className="w-3 h-3 rounded-full" style={{ backgroundColor: item.hexColor }}></span>
-                                          <span className="text-xs font-semibold">{item.partyName}</span>
+                                      <div key={item.partyId} className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-[var(--bg-card)] p-2 rounded-lg border border-[var(--border-color)]">
+                                        <div className="flex items-center gap-2 min-w-0">
+                                          <span className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: item.hexColor }}></span>
+                                          <span className="text-xs font-semibold break-words">{item.partyName}</span>
                                         </div>
                                         <div className="flex items-center gap-2">
                                           <input
                                             type="number"
                                             value={item.votes || ''}
                                             onChange={(e) => handleVoteChange(selectedRegionId, item.partyId, Number(e.target.value))}
-                                            className="w-24 bg-[var(--bg-main)] border border-[var(--border-color)] rounded px-2 py-1 text-xs text-center font-bold focus:outline-none"
+                                            className="w-full sm:w-24 bg-[var(--bg-main)] border border-[var(--border-color)] rounded px-2 py-1 text-xs text-center font-bold focus:outline-none"
                                             disabled={currentUser?.role === 'viewer'}
                                           />
                                           <span className="text-xs text-[var(--text-secondary)] w-12 text-end">{item.percentage}%</span>
@@ -2402,7 +2399,7 @@ export function App() {
                         </>
                       ) : (
                         <div className="p-8 text-center text-[var(--text-secondary)] bg-[var(--bg-main)] rounded-xl border border-[var(--border-color)]">
-                          تکایە سەرەتا لقێک لە لیستی چەپ هەڵبژێرە.
+                          تکایە سەرەتا لقێک لە لیستی لقەکان هەڵبژێرە.
                         </div>
                       )}
                     </div>
@@ -2415,9 +2412,9 @@ export function App() {
           {activeMainTab === 'controlPanel' && (
             <div className="space-y-6">
               {currentUser.role === 'super_admin' && (
-                <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-xl p-6 shadow-sm space-y-6">
+                <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-xl p-4 sm:p-6 shadow-sm space-y-6">
                   <div className="border-b border-[var(--border-color)] pb-4">
-                    <h2 className="text-xl font-bold">{t.controlPanelTitle}</h2>
+                    <h2 className="text-lg sm:text-xl font-bold">{t.controlPanelTitle}</h2>
                     <p className="text-sm text-[var(--text-secondary)] mt-1">{t.controlPanelSubtitle}</p>
                   </div>
 
@@ -2427,7 +2424,7 @@ export function App() {
                     </div>
                   )}
 
-                  <form onSubmit={handleCreateAccount} className="bg-[var(--bg-main)] border border-[var(--border-color)] p-4 rounded-xl grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+                  <form onSubmit={handleCreateAccount} className="bg-[var(--bg-main)] border border-[var(--border-color)] p-4 rounded-xl grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 items-end">
                     <div>
                       <label className="block text-xs font-semibold text-[var(--text-secondary)] mb-1">{t.fullNameLabel}</label>
                       <input
@@ -2501,9 +2498,9 @@ export function App() {
                     </button>
                   </form>
 
-                  <div className="overflow-x-auto">
+                  <div className="overflow-x-auto -mx-1 px-1">
                     <h3 className="font-bold text-sm mb-3">{t.accountsListTitle}</h3>
-                    <table className="w-full text-start border-collapse">
+                    <table className="w-full min-w-[720px] text-start border-collapse">
                       <thead>
                         <tr className="bg-[var(--bg-main)] border-b border-[var(--border-color)] text-xs text-[var(--text-secondary)]">
                           <th className="p-3 text-start">ناوی تەواو</th>
@@ -2526,7 +2523,7 @@ export function App() {
                                   type="text"
                                   defaultValue={u.password}
                                   onBlur={(e) => handleAdminUpdateUserPassword(u.id, e.target.value)}
-                                  className="bg-[var(--bg-main)] border border-[var(--border-color)] rounded px-2 py-1 text-xs w-28 focus:outline-none"
+                                  className="bg-[var(--bg-main)] border border-[var(--border-color)] rounded px-2 py-1 text-xs w-full min-w-[6rem] max-w-[9rem] focus:outline-none"
                                 />
                               </td>
                               <td className="p-3">
@@ -2559,7 +2556,7 @@ export function App() {
               )}
 
               {currentUser.role === 'branch_admin' && (
-                <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-xl p-6 shadow-sm space-y-6 max-w-xl mx-auto">
+                <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-xl p-4 sm:p-6 shadow-sm space-y-6 max-w-xl mx-auto">
                   <div className="border-b border-[var(--border-color)] pb-4">
                     <h2 className="text-xl font-bold">{t.changeMyPasswordTitle}</h2>
                     <p className="text-sm text-[var(--text-secondary)] mt-1">{t.changeMyPasswordSubtitle}</p>
@@ -2598,30 +2595,30 @@ export function App() {
 
           {activeMainTab === 'reports' && currentUser.role !== 'viewer' && (
             <div className="space-y-6">
-              <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-xl p-6 shadow-sm space-y-6 print:border-none print:shadow-none print:p-0">
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-[var(--border-color)] pb-4 print:hidden">
+                <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-xl p-4 sm:p-6 shadow-sm space-y-6 print:border-none print:shadow-none print:p-0">
+                <div className="flex flex-col md:flex-row justify-between items-stretch md:items-center gap-4 border-b border-[var(--border-color)] pb-4 print:hidden">
                   <div>
-                    <h2 className="text-xl font-bold">{t.reportsTitle}</h2>
+                    <h2 className="text-lg sm:text-xl font-bold">{t.reportsTitle}</h2>
                     <p className="text-sm text-[var(--text-secondary)] mt-1">{t.reportsSubtitle}</p>
                   </div>
 
-                  <div className="flex items-center gap-3">
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 w-full md:w-auto">
                     <button
                       onClick={handlePrintReport}
-                      className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition shadow-sm"
+                      className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition shadow-sm"
                     >
                       <span>{t.printReportBtn}</span>
                     </button>
                     <button
                       onClick={handleDownloadPdf}
-                      className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition shadow-sm"
+                      className="flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition shadow-sm"
                     >
                       <span>{t.downloadPdfBtn}</span>
                     </button>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-[var(--bg-main)] p-4 rounded-xl border border-[var(--border-color)] print:hidden">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 bg-[var(--bg-main)] p-3 sm:p-4 rounded-xl border border-[var(--border-color)] print:hidden">
                   <div>
                     <label className="block text-xs font-semibold text-[var(--text-secondary)] mb-1">خولی هەڵبژاردن</label>
                     <select
@@ -2742,7 +2739,7 @@ export function App() {
                   </div>
                 </div>
 
-                <div ref={reportRef} className="space-y-6 bg-[var(--bg-card)] p-6 rounded-xl border border-[var(--border-color)] print:border-none print:p-0">
+                <div ref={reportRef} className="space-y-6 bg-[var(--bg-card)] p-3 sm:p-6 rounded-xl border border-[var(--border-color)] print:border-none print:p-0">
                   <div className="text-center space-y-2 border-b border-[var(--border-color)] pb-4">
                     <h2 className="text-xl font-bold">{t.systemTitle}</h2>
                     <p className="text-sm font-semibold text-blue-500">
@@ -2750,7 +2747,7 @@ export function App() {
                     </p>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4 bg-[var(--bg-main)] p-4 rounded-xl border border-[var(--border-color)]">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-[var(--bg-main)] p-4 rounded-xl border border-[var(--border-color)]">
                     <div>
                       <p className="text-xs text-[var(--text-secondary)]">{t.totalVotesLabel}</p>
                       <p className="text-lg font-bold">{totalReportVotes.toLocaleString()} دەنگ</p>
@@ -2762,7 +2759,7 @@ export function App() {
                   </div>
 
                   <div className="overflow-x-auto">
-                    <table className="w-full text-start border-collapse border border-[var(--border-color)]">
+                    <table className="w-full min-w-[480px] text-start border-collapse border border-[var(--border-color)]">
                       <thead>
                         <tr className="bg-[var(--bg-main)] border-b border-[var(--border-color)] text-xs text-[var(--text-secondary)]">
                           <th className="p-3 text-start border-e border-[var(--border-color)]">#</th>
