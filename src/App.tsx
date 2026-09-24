@@ -17,7 +17,6 @@ import {
   Plus,
   Trash2
 } from 'lucide-react';
-import html2pdf from 'html2pdf.js';
 
 // ناونیشانی باکئیند لەسەر Render
 const API_URL = "https://dataelec.onrender.com";
@@ -1377,18 +1376,19 @@ export function App() {
     window.print();
   };
 
-  const handleDownloadPdf = () => {
+  const handleDownloadPdf = async () => {
     const element = reportRef.current;
-    
-    const options = {
-        margin:       10,
-        filename:     'election-report.pdf',
-        image:        { type: 'jpeg' as const, quality: 0.98 },
-        html2canvas:  { scale: 2 },
-        jsPDF:        { unit: 'mm' as const, format: 'a4' as const, orientation: 'portrait' as const }
-    };
 
     if (element) {
+        // html2pdf زۆر قورسە (html2canvas + jsPDF) بۆیە تەنها کاتێک دادەبەزێت کە بەکارهێنەر دەیخوازێت
+        const { default: html2pdf } = await import('html2pdf.js');
+        const options = {
+            margin:       10,
+            filename:     'election-report.pdf',
+            image:        { type: 'jpeg' as const, quality: 0.98 },
+            html2canvas:  { scale: 2 },
+            jsPDF:        { unit: 'mm' as const, format: 'a4' as const, orientation: 'portrait' as const }
+        };
         html2pdf().from(element).set(options).save();
     }
   };
