@@ -2181,8 +2181,20 @@ export function App() {
 
               {selectedRoundId && (
                 <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-xl p-4 sm:p-6 shadow-sm space-y-6">
-                  <div className="border-b border-[var(--border-color)] pb-4">
+                  <div className="border-b border-[var(--border-color)] pb-4 space-y-3">
                     <h3 className="text-base sm:text-lg font-bold break-words">بەڕێوەبردنی لقەکان و ناوچەکان بۆ خولی: {currentRound?.name}</h3>
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                      <label className="text-xs font-semibold text-[var(--text-secondary)] shrink-0">🗳️ خولی ئامانج (داتای دەنگدان بۆ ئەم خولە تۆمار دەکرێت):</label>
+                      <select
+                        value={selectedRoundId ?? ''}
+                        onChange={(e) => { setSelectedRoundId(Number(e.target.value)); setSelectedBranchId(null); setSelectedRegionId(null); }}
+                        className="w-full sm:w-auto bg-[var(--bg-main)] text-[var(--text-primary)] border border-[var(--border-color)] rounded-lg px-3 py-2 text-sm font-semibold focus:outline-none"
+                      >
+                        {rounds.map(r => (
+                          <option key={r.id} value={r.id}>{r.name} ({r.date})</option>
+                        ))}
+                      </select>
+                    </div>
                   </div>
 
                   {currentUser.role === 'super_admin' && (
@@ -2236,6 +2248,10 @@ export function App() {
                     <div className="lg:col-span-2 space-y-4">
                       {selectedBranchId ? (
                         <>
+                          <div className="flex flex-wrap items-center gap-2 text-xs">
+                            <span className="px-2.5 py-1 rounded-lg bg-blue-600/15 text-blue-500 font-bold border border-blue-600/30">🗳️ خول: {currentRound?.name} ({currentRound?.date})</span>
+                            <span className="px-2.5 py-1 rounded-lg bg-emerald-600/15 text-emerald-500 font-bold border border-emerald-600/30">📍 لق: {currentBranches.find(b => b.id === selectedBranchId)?.name}</span>
+                          </div>
                           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 border-b border-[var(--border-color)] pb-3">
                             <h4 className="font-bold text-sm">ناوچەکانی لقی هەڵبژاردراو</h4>
                             {currentUser.role !== 'viewer' && (
@@ -2339,6 +2355,11 @@ export function App() {
 
                               {selectedRegionId && (
                                 <div className="space-y-4 bg-[var(--bg-main)] p-4 rounded-xl border border-[var(--border-color)]">
+                                  <div className="flex flex-wrap items-center gap-2 text-xs">
+                                    <span className="px-2.5 py-1 rounded-lg bg-blue-600/15 text-blue-500 font-bold border border-blue-600/30">🗳️ خول: {currentRound?.name}</span>
+                                    <span className="px-2.5 py-1 rounded-lg bg-emerald-600/15 text-emerald-500 font-bold border border-emerald-600/30">📍 لق: {currentBranches.find(b => b.id === selectedBranchId)?.name}</span>
+                                    <span className="px-2.5 py-1 rounded-lg bg-amber-600/15 text-amber-500 font-bold border border-amber-600/30">🏘️ ناوچە: {currentRegions.find(rg => rg.id === selectedRegionId)?.name}</span>
+                                  </div>
                                   <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                                     <div>
                                       <label className="block text-xs font-semibold text-[var(--text-secondary)] mb-1">کۆی دەنگدەران</label>
