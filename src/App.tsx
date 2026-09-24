@@ -15,7 +15,9 @@ import {
   Printer,
   Download,
   Plus,
-  Trash2
+  Trash2,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 
 // ناونیشانی باکئیند لەسەر Render
@@ -519,6 +521,7 @@ export function App() {
   const [authView, setAuthView] = useState<'login' | 'forgot'>('login');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [loginError, setLoginError] = useState('');
   const [recoveryEmail, setRecoveryEmail] = useState('');
@@ -1466,7 +1469,6 @@ export function App() {
                       value={username}
                       onChange={(e) => setUsername(e.target.value)}
                       className={`w-full bg-[var(--bg-main)] border border-[var(--border-color)] rounded-xl ${lang === 'en' ? 'pl-10 pr-4' : 'pr-10 pl-4'} py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none`}
-                      placeholder="admin"
                       required 
                     />
                   </div>
@@ -1477,13 +1479,20 @@ export function App() {
                   <div className="relative">
                     <Lock className={`absolute ${lang === 'en' ? 'left-3' : 'right-3'} top-3 w-5 h-5 text-gray-400`} />
                     <input 
-                      type="password" 
+                      type={showPassword ? 'text' : 'password'} 
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className={`w-full bg-[var(--bg-main)] border border-[var(--border-color)] rounded-xl ${lang === 'en' ? 'pl-10 pr-4' : 'pr-10 pl-4'} py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none`}
-                      placeholder="123456"
+                      className={`w-full bg-[var(--bg-main)] border border-[var(--border-color)] rounded-xl ${lang === 'en' ? 'pl-10 pr-10' : 'pr-10 pl-10'} py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none`}
                       required 
                     />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      title={showPassword ? 'شاردنەوەی وشەی نهێنی' : 'بینینی وشەی نهێنی'}
+                      className={`absolute ${lang === 'en' ? 'right-3' : 'left-3'} top-3 text-gray-400 hover:text-gray-200 transition focus:outline-none`}
+                    >
+                      {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    </button>
                   </div>
                 </div>
 
