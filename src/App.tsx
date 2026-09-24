@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
-  ShieldCheck, 
   User, 
   Lock, 
   Mail, 
@@ -1436,9 +1435,7 @@ export function App() {
           {authView === 'login' && (
             <>
               <div className="text-center mb-6 pt-4">
-                <div className="inline-flex p-3 bg-blue-600/20 text-blue-500 rounded-full mb-3">
-                  <ShieldCheck className="w-8 h-8" />
-                </div>
+                <img src="/kdp-logo.jpg" alt="KDP" className="w-28 h-28 object-contain mx-auto mb-3 rounded-full shadow-lg ring-4 ring-blue-600/30" />
                 <h2 className="text-2xl font-bold">{t.loginTitle}</h2>
                 <p className="text-[var(--text-secondary)] text-sm mt-1">{t.loginSubtitle}</p>
               </div>
