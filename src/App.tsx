@@ -892,6 +892,47 @@ export function App() {
     }
   }, [currentUser, branches]);
 
+  // خودکارانە: ناوی لقەکان و ناوچەکان بۆ هەموو خولەکان هاوبەش دەکرێن
+  useEffect(() => {
+    if (!isStateLoaded || rounds.length < 2 || branches.length === 0) return;
+    let sid = Date.now();
+    const idFor = new Map<string, number>();
+    branches.forEach(b => idFor.set(`${b.name}|${b.roundId}`, b.id));
+    const addedBranches: Branch[] = [];
+    branches.map(b => b.name).filter((v, i, a) => a.indexOf(v) === i).forEach(name => {
+      rounds.forEach(r => {
+        if (!idFor.has(`${name}|${r.id}`)) {
+          const nb: Branch = { id: ++sid, roundId: r.id, name };
+          addedBranches.push(nb);
+          idFor.set(`${name}|${r.id}`, nb.id);
+        }
+      });
+    });
+    const branchNameById = new Map<number, string>(branches.map(b => [b.id, b.name] as const));
+    addedBranches.forEach(b => branchNameById.set(b.id, b.name));
+    const regionUnion = new Map<string, Set<string>>();
+    regions.forEach(rg => {
+      const bname = branchNameById.get(rg.branchId);
+      if (!bname) return;
+      if (!regionUnion.has(bname)) regionUnion.set(bname, new Set());
+      regionUnion.get(bname)!.add(rg.name);
+    });
+    const haveRegion = new Set(regions.map(rg => `${rg.branchId}|${rg.name}`));
+    const addedRegions: Region[] = [];
+    [...branches, ...addedBranches].forEach(b => {
+      const names = regionUnion.get(b.name);
+      if (!names) return;
+      names.forEach(rn => {
+        if (!haveRegion.has(`${b.id}|${rn}`)) {
+          addedRegions.push({ id: ++sid, branchId: b.id, name: rn });
+          haveRegion.add(`${b.id}|${rn}`);
+        }
+      });
+    });
+    if (addedBranches.length > 0) setBranches(prev => [...prev, ...addedBranches]);
+    if (addedRegions.length > 0) setRegions(prev => [...prev, ...addedRegions]);
+  }, [isStateLoaded, rounds, branches, regions]);
+
   useEffect(() => {
     if (rounds.length > 0 && (!dashSelectedRoundId || !rounds.some(r => r.id === dashSelectedRoundId))) {
       const firstId = rounds[0].id;
@@ -1039,7 +1080,10 @@ export function App() {
     if (!newBranchName || !selectedRoundId) return;
 
     if (editingBranchId !== null) {
-      setBranches(branches.map(b => b.id === editingBranchId ? { ...b, name: newBranchName } : b));
+      const oldBranch = branches.find(b => b.id === editingBranchId);
+      if (oldBranch) {
+        setBranches(branches.map(b => b.name === oldBranch.name ? { ...b, name: newBranchName } : b));
+      }
       setEditingBranchId(null);
     } else {
       const newB: Branch = { id: Date.now(), roundId: selectedRoundId, name: newBranchName };
@@ -1060,8 +1104,12 @@ export function App() {
 
   const handleDeleteBranch = (id: number) => {
     if (currentUser?.role !== 'super_admin') return;
-    setBranches(branches.filter(b => b.id !== id));
-    if (selectedBranchId === id) setSelectedBranchId(null);
+    const target = branches.find(b => b.id === id);
+    if (!target) return;
+    const sameNameIds = new Set(branches.filter(b => b.name === target.name).map(b => b.id));
+    setBranches(branches.filter(b => b.name !== target.name));
+    setRegions(regions.filter(rg => !sameNameIds.has(rg.branchId)));
+    if (selectedBranchId !== null && sameNameIds.has(selectedBranchId)) setSelectedBranchId(null);
   };
 
   const handleSaveRegion = (e: React.FormEvent) => {
@@ -1070,7 +1118,12 @@ export function App() {
     if (!newRegionName || !selectedBranchId) return;
 
     if (editingRegionId !== null) {
-      setRegions(regions.map(reg => reg.id === editingRegionId ? { ...reg, name: newRegionName } : reg));
+      const oldReg = regions.find(r => r.id === editingRegionId);
+      const oldRegBranch = oldReg ? branches.find(b => b.id === oldReg.branchId) : undefined;
+      if (oldReg && oldRegBranch) {
+        const sameBranchIds = new Set(branches.filter(b => b.name === oldRegBranch.name).map(b => b.id));
+        setRegions(regions.map(reg => sameBranchIds.has(reg.branchId) && reg.name === oldReg.name ? { ...reg, name: newRegionName } : reg));
+      }
       setEditingRegionId(null);
     } else {
       const newReg: Region = { id: Date.now(), branchId: selectedBranchId, name: newRegionName };
@@ -1091,7 +1144,15 @@ export function App() {
 
   const handleDeleteRegion = (id: number) => {
     if (currentUser?.role === 'viewer') return;
-    setRegions(regions.filter(reg => reg.id !== id));
+    const target = regions.find(r => r.id === id);
+    if (!target) return;
+    const targetBranch = branches.find(b => b.id === target.branchId);
+    if (!targetBranch) {
+      setRegions(regions.filter(reg => reg.id !== id));
+    } else {
+      const sameBranchIds = new Set(branches.filter(b => b.name === targetBranch.name).map(b => b.id));
+      setRegions(regions.filter(reg => !(sameBranchIds.has(reg.branchId) && reg.name === target.name)));
+    }
     if (selectedRegionId === id) setSelectedRegionId(null);
   };
 
