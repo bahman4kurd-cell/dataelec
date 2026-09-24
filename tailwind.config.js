@@ -5,7 +5,11 @@ export default {
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
-    extend: {},
+    extend: {
+      fontFamily: {
+        sans: ['Rudaw', 'NRT', 'Noto Sans Arabic', 'Tahoma', 'Segoe UI', 'sans-serif'],
+      },
+    },
   },
   plugins: [],
 }

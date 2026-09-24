@@ -2,6 +2,23 @@
 @tailwind components;
 @tailwind utilities;
 
+/* فۆنتی وێبی ڕاگوێزراو — Rudaw سەرەکی، NRT یەدەگ */
+@font-face {
+  font-family: 'Rudaw';
+  src: url('/fonts/rudaw-regular.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'NRT';
+  src: url('/fonts/nrt-kurdish.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* گۆڕاوەکانی ڕوکار و ڕەنگەکان (CSS Variables) */
 :root,
 [data-theme="government"] {
@@ -70,7 +87,7 @@ body,
 
 body {
   margin: 0;
-  font-family: Rudaw, "Noto Sans Arabic", Tahoma, "Segoe UI", sans-serif;
+  font-family: 'Rudaw', 'NRT', 'Noto Sans Arabic', Tahoma, 'Segoe UI', sans-serif;
   background-color: var(--bg-main);
   color: var(--text-primary);
 }
