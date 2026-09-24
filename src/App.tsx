@@ -720,6 +720,7 @@ export function App() {
   const [roundVoters, setRoundVoters] = useState('');
   const [editingRoundId, setEditingRoundId] = useState<number | null>(null);
   const [copyBranchesFromRoundId, setCopyBranchesFromRoundId] = useState('');
+  const [copyIntoSourceId, setCopyIntoSourceId] = useState('');
 
   const [branches, setBranches] = useState<Branch[]>([]);
   const [newBranchName, setNewBranchName] = useState('');
@@ -986,6 +987,40 @@ export function App() {
     setRoundName('');
     setRoundDate('');
     setRoundVoters('');
+  };
+
+  const handleCopyBranchesIntoRounds = (targetAll: boolean) => {
+    if (currentUser?.role !== 'super_admin' || !copyIntoSourceId || !selectedRoundId) return;
+    const srcId = Number(copyIntoSourceId);
+    const targets = targetAll ? rounds.filter(r => r.id !== srcId).map(r => r.id) : [selectedRoundId];
+    const addedBranches: Branch[] = [];
+    const addedRegions: Region[] = [];
+    let stamp = Date.now();
+    targets.forEach(tid => {
+      const nameToBranchId = new Map<string, number>();
+      branches.filter(b => b.roundId === tid).forEach(b => nameToBranchId.set(b.name, b.id));
+      addedBranches.filter(b => b.roundId === tid).forEach(b => nameToBranchId.set(b.name, b.id));
+      branches.filter(b => b.roundId === srcId).forEach(sb => {
+        let tBranchId = nameToBranchId.get(sb.name);
+        if (tBranchId === undefined) {
+          tBranchId = ++stamp;
+          addedBranches.push({ id: tBranchId, roundId: tid, name: sb.name });
+          nameToBranchId.set(sb.name, tBranchId);
+        }
+        const existingRegionNames = new Set<string>();
+        regions.forEach(rg => { if (rg.branchId === tBranchId) existingRegionNames.add(rg.name); });
+        addedRegions.forEach(rg => { if (rg.branchId === tBranchId) existingRegionNames.add(rg.name); });
+        regions.filter(rg => rg.branchId === sb.id).forEach(sr => {
+          if (!existingRegionNames.has(sr.name)) {
+            addedRegions.push({ id: ++stamp, branchId: tBranchId, name: sr.name });
+            existingRegionNames.add(sr.name);
+          }
+        });
+      });
+    });
+    if (addedBranches.length > 0) setBranches(prev => [...prev, ...addedBranches]);
+    if (addedRegions.length > 0) setRegions(prev => [...prev, ...addedRegions]);
+    setCopyIntoSourceId('');
   };
 
   const handleEditRound = (r: ElectionRound) => {
@@ -2250,6 +2285,42 @@ export function App() {
                         {editingBranchId !== null ? t.updateBtn : t.addBranchBtn}
                       </button>
                     </form>
+                  )}
+
+                  {currentUser.role === 'super_admin' && rounds.length > 1 && (
+                    <div className="bg-[var(--bg-main)] border border-[var(--border-color)] p-4 rounded-xl space-y-3">
+                      <p className="text-xs font-semibold text-[var(--text-secondary)]">📋 کۆپی کردنی هەموو لق و ناوچەکان لە خولێکی ترەوە (تەنها ناو، بەبێ دەنگەکان — دووبارە هەڵبژاردن هیچ زیادی ناکات):</p>
+                      <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
+                        <select
+                          value={copyIntoSourceId}
+                          onChange={(e) => setCopyIntoSourceId(e.target.value)}
+                          className="w-full sm:w-auto bg-[var(--bg-card)] text-[var(--text-primary)] border border-[var(--border-color)] rounded-lg px-3 py-2 text-sm font-semibold focus:outline-none"
+                        >
+                          <option value="">هەڵبژاردنی خولی سەرچاوە...</option>
+                          {rounds.filter(r => r.id !== selectedRoundId).map(r => (
+                            <option key={r.id} value={r.id}>{r.name} ({r.date})</option>
+                          ))}
+                        </select>
+                        <div className="flex flex-col sm:flex-row gap-2">
+                          <button
+                            type="button"
+                            disabled={!copyIntoSourceId}
+                            onClick={() => handleCopyBranchesIntoRounds(false)}
+                            className="bg-blue-600 hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold px-4 py-2 rounded-lg text-sm transition whitespace-nowrap"
+                          >
+                            کۆپی بۆ ئەم خولە
+                          </button>
+                          <button
+                            type="button"
+                            disabled={!copyIntoSourceId}
+                            onClick={() => handleCopyBranchesIntoRounds(true)}
+                            className="bg-violet-600 hover:bg-violet-700 disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold px-4 py-2 rounded-lg text-sm transition whitespace-nowrap"
+                          >
+                            کۆپی بۆ هەموو خولەکان
+                          </button>
+                        </div>
+                      </div>
+                    </div>
                   )}
 
                   <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
