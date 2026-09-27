@@ -878,6 +878,11 @@ export function App() {
     document.documentElement.setAttribute('data-theme', theme);
   }, [theme]);
 
+  // بەڕێوەبەر/بینەری لق بەپێی ناوی لقەکەی ناسراوە، چونکە ناوەکان لە هەموو خولەکان هاوبەشن
+  const userBranchName = (currentUser?.role === 'branch_admin' || currentUser?.role === 'viewer') && currentUser?.branchId
+    ? branches.find(b => b.id === currentUser.branchId)?.name ?? null
+    : null;
+
   useEffect(() => {
     if (currentUser && (currentUser.role === 'branch_admin' || currentUser.role === 'viewer') && currentUser.branchId) {
       setSelectedBranchId(currentUser.branchId);
@@ -952,7 +957,7 @@ export function App() {
   useEffect(() => {
     if (dashSelectedRoundId) {
       const roundBranches = (currentUser?.role === 'branch_admin' || currentUser?.role === 'viewer') && currentUser.branchId 
-        ? branches.filter(b => b.roundId === dashSelectedRoundId && b.id === currentUser.branchId)
+        ? branches.filter(b => b.roundId === dashSelectedRoundId && b.name === userBranchName)
         : branches.filter(b => b.roundId === dashSelectedRoundId);
       
       setDashSelectedBranchIds(roundBranches.map(b => b.id));
@@ -963,7 +968,7 @@ export function App() {
   useEffect(() => {
     if (repSelectedRoundId) {
       const roundBranches = (currentUser?.role === 'branch_admin' || currentUser?.role === 'viewer') && currentUser.branchId 
-        ? branches.filter(b => b.roundId === repSelectedRoundId && b.id === currentUser.branchId)
+        ? branches.filter(b => b.roundId === repSelectedRoundId && b.name === userBranchName)
         : branches.filter(b => b.roundId === repSelectedRoundId);
       
       setRepSelectedBranchIds(roundBranches.map(b => b.id));
@@ -1469,7 +1474,7 @@ export function App() {
 
   const currentRound = rounds.find(r => r.id === selectedRoundId);
   const currentBranches = (currentUser?.role === 'branch_admin' || currentUser?.role === 'viewer') && currentUser.branchId
-    ? branches.filter(b => b.roundId === selectedRoundId && b.id === currentUser.branchId)
+    ? branches.filter(b => b.roundId === selectedRoundId && b.name === userBranchName)
     : branches.filter(b => b.roundId === selectedRoundId);
 
   const currentRegions = regions.filter(reg => reg.branchId === selectedBranchId);
@@ -1477,13 +1482,13 @@ export function App() {
   const currentBranchVotes = selectedBranchId ? getMergedBranchVotes(selectedBranchId) : [];
 
   const dashFilteredBranches = (currentUser?.role === 'branch_admin' || currentUser?.role === 'viewer') && currentUser.branchId
-    ? branches.filter(b => b.roundId === dashSelectedRoundId && b.id === currentUser.branchId)
+    ? branches.filter(b => b.roundId === dashSelectedRoundId && b.name === userBranchName)
     : dashSelectedRoundId ? branches.filter(b => b.roundId === dashSelectedRoundId) : [];
 
   const dashFilteredRegions = regions.filter(reg => dashSelectedBranchIds.includes(reg.branchId));
 
   const repFilteredBranches = (currentUser?.role === 'branch_admin' || currentUser?.role === 'viewer') && currentUser.branchId
-    ? branches.filter(b => b.roundId === repSelectedRoundId && b.id === currentUser.branchId)
+    ? branches.filter(b => b.roundId === repSelectedRoundId && b.name === userBranchName)
     : repSelectedRoundId ? branches.filter(b => b.roundId === repSelectedRoundId) : [];
 
   const repFilteredRegions = regions.filter(reg => repSelectedBranchIds.includes(reg.branchId));
@@ -2652,12 +2657,14 @@ export function App() {
                           required
                         >
                           <option value="">{t.selectBranchPlaceholder}</option>
-                          {branches.map(b => {
-                            const bRound = rounds.find(r => r.id === b.roundId);
-                            return (
-                              <option key={b.id} value={b.id}>{b.name}{bRound ? ` — ${bRound.name}` : ''}</option>
-                            );
-                          })}
+                          {(() => {
+                            const seen = new Set<string>();
+                            return branches.filter(b => {
+                              if (seen.has(b.name)) return false;
+                              seen.add(b.name);
+                              return true;
+                            }).map(b => <option key={b.id} value={b.id}>{b.name}</option>);
+                          })()}
                         </select>
                       </div>
                     )}
