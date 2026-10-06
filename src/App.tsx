@@ -1529,7 +1529,7 @@ export function App() {
             margin:       10,
             filename:     'election-report.pdf',
             image:        { type: 'jpeg' as const, quality: 0.98 },
-            html2canvas:  { scale: 2 },
+            html2canvas:  { scale: 2, backgroundColor: '#ffffff' },
             jsPDF:        { unit: 'mm' as const, format: 'a4' as const, orientation: 'portrait' as const }
         };
         html2pdf().from(element).set(options).save();
@@ -2938,7 +2938,7 @@ export function App() {
                   </div>
                 </div>
 
-                <div ref={reportRef} className="space-y-6 bg-[var(--bg-card)] p-3 sm:p-6 rounded-xl border border-[var(--border-color)] print:border-none print:p-0">
+                <div ref={reportRef} className="report-print space-y-6 bg-[var(--bg-card)] p-3 sm:p-6 rounded-xl border border-[var(--border-color)] print:border-none print:p-0">
                   <div className="text-center space-y-2 border-b border-[var(--border-color)] pb-4">
                     <h2 className="text-xl font-bold">{t.systemTitle}</h2>
                     <p className="text-sm font-semibold text-blue-500">

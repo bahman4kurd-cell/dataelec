@@ -92,6 +92,25 @@ body {
   color: var(--text-primary);
 }
 
+.report-print {
+  --bg-main: #ffffff;
+  --bg-card: #ffffff;
+  --bg-hover: #f8fafc;
+  --text-primary: #0f172a;
+  --text-secondary: #334155;
+  --border-color: #cbd5e1;
+  color: #0f172a !important;
+  background-color: #ffffff !important;
+  color-scheme: light;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+.report-print * {
+  color: #0f172a !important;
+  border-color: #cbd5e1 !important;
+}
+
 #root {
   min-height: 100dvh;
 }
