@@ -33,6 +33,7 @@ interface UserAccount {
   password: string;
   role: UserRole;
   branchId?: number | null;
+  branchIds?: number[];
   name: string;
 }
 
@@ -150,6 +151,8 @@ const translations = {
     branchAdminRole: 'ئەدمینی لق (Branch Admin)',
     viewerRole: 'چاودێر (Viewer - بینین)',
     selectBranchPlaceholder: '-- لقی مەبەست هەڵبژێرە --',
+    selectBranchesHint: 'یەک یان چەند لق هەڵبژێرە',
+    selectedBranchesCount: 'لق دیاریکراوە',
     createAccountBtn: '+ دروستکردنی ئەکاونت',
     accountsListTitle: 'لیستی هەموو ئەکاونتەکان و بینین/گۆڕینی پاسوۆردەکانیان لە داتابەیسدا',
     passwordDbHeader: 'پاسوۆرد (داتابەیس)',
@@ -235,6 +238,8 @@ const translations = {
     branchAdminRole: 'ئەدمینێ لقێ (Branch Admin)',
     viewerRole: 'چاودێر (Viewer - دیتن)',
     selectBranchPlaceholder: '-- لقێ مەرەم هەلبژێرە --',
+    selectBranchesHint: 'یەک یان چەند لق هەڵبژێرە',
+    selectedBranchesCount: 'لق دیاریکراون',
     createAccountBtn: '+ چێکرنا ئەکاونتی',
     accountsListTitle: 'لیستا هەمی ئەکاونتان و دیتن/گوهۆڕینا پاسۆردێن وان د داتابەیسێ دا',
     passwordDbHeader: 'پاسۆرد (داتابەیس)',
@@ -320,6 +325,8 @@ const translations = {
     branchAdminRole: 'Branch Admin',
     viewerRole: 'Viewer',
     selectBranchPlaceholder: '-- Select Target Branch --',
+    selectBranchesHint: 'Select one or more branches',
+    selectedBranchesCount: 'branches selected',
     createAccountBtn: '+ Create Account',
     accountsListTitle: 'List of all accounts and view/change their passwords in database',
     passwordDbHeader: 'Password (Database)',
@@ -405,6 +412,8 @@ const translations = {
     branchAdminRole: 'مدير الفرع',
     viewerRole: 'مشاهد',
     selectBranchPlaceholder: '-- اختر الفرع المستهدف --',
+    selectBranchesHint: 'اختر فرعًا واحدًا أو أكثر',
+    selectedBranchesCount: 'فروع محددة',
     createAccountBtn: '+ إنشاء حساب',
     accountsListTitle: 'قائمة جميع الحسابات وعرض/تغيير كلمات المرور الخاصة بهم في قاعدة البيانات',
     passwordDbHeader: 'كلمة المرور (قاعدة البيانات)',
@@ -490,6 +499,8 @@ const translations = {
     branchAdminRole: 'مدیر شعبه',
     viewerRole: 'ناظر',
     selectBranchPlaceholder: '-- شعبه مورد نظر را انتخاب کنید --',
+    selectBranchesHint: 'یک یا چند شعبه انتخاب کنید',
+    selectedBranchesCount: 'شعبه انتخاب شده',
     createAccountBtn: '+ ایجاد حساب',
     accountsListTitle: 'لیست تمام حساب ها و مشاهده/تغییر رمز عبور آنها در پایگاه داده',
     passwordDbHeader: 'رمز عبور (پایگاه داده)',
@@ -528,7 +539,7 @@ export function App() {
   const [newAccPassword, setNewAccPassword] = useState('');
   const [newAccName, setNewAccName] = useState('');
   const [newAccRole, setNewAccRole] = useState<UserRole>('branch_admin');
-  const [newAccBranchId, setNewAccBranchId] = useState<number | null>(null);
+  const [newAccBranchIds, setNewAccBranchIds] = useState<number[]>([]);
   const [accSuccessMsg, setAccSuccessMsg] = useState('');
   const [accErrorMsg, setAccErrorMsg] = useState('');
 
@@ -636,7 +647,7 @@ export function App() {
       return;
     }
 
-    if ((newAccRole === 'branch_admin' || newAccRole === 'viewer') && !newAccBranchId) {
+    if ((newAccRole === 'branch_admin' || newAccRole === 'viewer') && newAccBranchIds.length === 0) {
       setAccErrorMsg('پێویستە لقی پەیوەندیدار هەڵبژێریت بۆ ئەم ئەکاونتە.');
       return;
     }
@@ -647,7 +658,8 @@ export function App() {
       password: newAccPassword,
       name: newAccName.trim(),
       role: newAccRole,
-      branchId: (newAccRole === 'branch_admin' || newAccRole === 'viewer') ? Number(newAccBranchId) || null : null
+      branchId: (newAccRole === 'branch_admin' || newAccRole === 'viewer') ? newAccBranchIds[0] : null,
+      branchIds: (newAccRole === 'branch_admin' || newAccRole === 'viewer') ? newAccBranchIds : [],
     };
 
     const updatedUsers = [...users, newUser];
@@ -657,7 +669,7 @@ export function App() {
     setNewAccUsername('');
     setNewAccPassword('');
     setNewAccName('');
-    setNewAccBranchId(null);
+    setNewAccBranchIds([]);
   };
 
   const handleDeleteUser = (id: number) => {
@@ -879,15 +891,17 @@ export function App() {
   }, [theme]);
 
   // بەڕێوەبەر/بینەری لق بەپێی ناوی لقەکەی ناسراوە، چونکە ناوەکان لە هەموو خولەکان هاوبەشن
-  const userBranchName = (currentUser?.role === 'branch_admin' || currentUser?.role === 'viewer') && currentUser?.branchId
-    ? branches.find(b => b.id === currentUser.branchId)?.name ?? null
-    : null;
+  const userBranchNames = (currentUser?.role === 'branch_admin' || currentUser?.role === 'viewer')
+    ? [...new Set((currentUser.branchIds?.length ? currentUser.branchIds : currentUser.branchId ? [currentUser.branchId] : [])
+        .map(id => branches.find(branch => branch.id === id)?.name)
+        .filter((name): name is string => Boolean(name)))]
+    : [];
 
   useEffect(() => {
-    if (currentUser && (currentUser.role === 'branch_admin' || currentUser.role === 'viewer') && currentUser.branchId) {
-      setSelectedBranchId(currentUser.branchId);
-      const targetBranch = branches.find(b => b.id === currentUser.branchId);
+    if (currentUser && (currentUser.role === 'branch_admin' || currentUser.role === 'viewer') && userBranchNames.length > 0) {
+      const targetBranch = branches.find(branch => userBranchNames.includes(branch.name));
       if (targetBranch) {
+        setSelectedBranchId(targetBranch.id);
         setDashSelectedBranchIds([targetBranch.id]);
         setDashSelectedRoundId(targetBranch.roundId);
         setSelectedRoundId(targetBranch.roundId);
@@ -956,8 +970,8 @@ export function App() {
 
   useEffect(() => {
     if (dashSelectedRoundId) {
-      const roundBranches = (currentUser?.role === 'branch_admin' || currentUser?.role === 'viewer') && currentUser.branchId 
-        ? branches.filter(b => b.roundId === dashSelectedRoundId && b.name === userBranchName)
+      const roundBranches = (currentUser?.role === 'branch_admin' || currentUser?.role === 'viewer')
+        ? branches.filter(b => b.roundId === dashSelectedRoundId && userBranchNames.includes(b.name))
         : branches.filter(b => b.roundId === dashSelectedRoundId);
       
       setDashSelectedBranchIds(roundBranches.map(b => b.id));
@@ -967,8 +981,8 @@ export function App() {
 
   useEffect(() => {
     if (repSelectedRoundId) {
-      const roundBranches = (currentUser?.role === 'branch_admin' || currentUser?.role === 'viewer') && currentUser.branchId 
-        ? branches.filter(b => b.roundId === repSelectedRoundId && b.name === userBranchName)
+      const roundBranches = (currentUser?.role === 'branch_admin' || currentUser?.role === 'viewer')
+        ? branches.filter(b => b.roundId === repSelectedRoundId && userBranchNames.includes(b.name))
         : branches.filter(b => b.roundId === repSelectedRoundId);
       
       setRepSelectedBranchIds(roundBranches.map(b => b.id));
@@ -1473,22 +1487,22 @@ export function App() {
   };
 
   const currentRound = rounds.find(r => r.id === selectedRoundId);
-  const currentBranches = (currentUser?.role === 'branch_admin' || currentUser?.role === 'viewer') && currentUser.branchId
-    ? branches.filter(b => b.roundId === selectedRoundId && b.name === userBranchName)
+  const currentBranches = (currentUser?.role === 'branch_admin' || currentUser?.role === 'viewer')
+    ? branches.filter(b => b.roundId === selectedRoundId && userBranchNames.includes(b.name))
     : branches.filter(b => b.roundId === selectedRoundId);
 
   const currentRegions = regions.filter(reg => reg.branchId === selectedBranchId);
   const currentRegionVotes = selectedRegionId ? getMergedRegionVotes(selectedRegionId) : [];
   const currentBranchVotes = selectedBranchId ? getMergedBranchVotes(selectedBranchId) : [];
 
-  const dashFilteredBranches = (currentUser?.role === 'branch_admin' || currentUser?.role === 'viewer') && currentUser.branchId
-    ? branches.filter(b => b.roundId === dashSelectedRoundId && b.name === userBranchName)
+  const dashFilteredBranches = (currentUser?.role === 'branch_admin' || currentUser?.role === 'viewer')
+    ? branches.filter(b => b.roundId === dashSelectedRoundId && userBranchNames.includes(b.name))
     : dashSelectedRoundId ? branches.filter(b => b.roundId === dashSelectedRoundId) : [];
 
   const dashFilteredRegions = regions.filter(reg => dashSelectedBranchIds.includes(reg.branchId));
 
-  const repFilteredBranches = (currentUser?.role === 'branch_admin' || currentUser?.role === 'viewer') && currentUser.branchId
-    ? branches.filter(b => b.roundId === repSelectedRoundId && b.name === userBranchName)
+  const repFilteredBranches = (currentUser?.role === 'branch_admin' || currentUser?.role === 'viewer')
+    ? branches.filter(b => b.roundId === repSelectedRoundId && userBranchNames.includes(b.name))
     : repSelectedRoundId ? branches.filter(b => b.roundId === repSelectedRoundId) : [];
 
   const repFilteredRegions = regions.filter(reg => repSelectedBranchIds.includes(reg.branchId));
@@ -2648,24 +2662,27 @@ export function App() {
                     </div>
 
                     {(newAccRole === 'branch_admin' || newAccRole === 'viewer') && (
-                      <div>
-                        <label className="block text-xs font-semibold text-[var(--text-secondary)] mb-1">لقی پەیوەندیدار</label>
-                        <select
-                          value={newAccBranchId || ''}
-                          onChange={(e) => setNewAccBranchId(Number(e.target.value))}
-                          className="w-full bg-[var(--bg-card)] border border-[var(--border-color)] rounded-lg px-3 py-2 text-sm focus:outline-none"
-                          required
-                        >
-                          <option value="">{t.selectBranchPlaceholder}</option>
-                          {(() => {
-                            const seen = new Set<string>();
-                            return branches.filter(b => {
-                              if (seen.has(b.name)) return false;
-                              seen.add(b.name);
-                              return true;
-                            }).map(b => <option key={b.id} value={b.id}>{b.name}</option>);
-                          })()}
-                        </select>
+                      <div className="sm:col-span-2 lg:col-span-1">
+                        <div className="flex justify-between gap-2 mb-1 text-xs">
+                          <label className="font-semibold text-[var(--text-secondary)]">{t.linkedBranchHeader}</label>
+                          <span className="text-[var(--text-secondary)]">{newAccBranchIds.length} {t.selectedBranchesCount}</span>
+                        </div>
+                        <div className="max-h-32 overflow-y-auto bg-[var(--bg-card)] border border-[var(--border-color)] rounded-lg p-2">
+                          {branches.filter((branch, index, allBranches) => allBranches.findIndex(item => item.name === branch.name) === index).map(branch => (
+                            <label key={branch.id} className="flex items-center gap-2 px-2 py-1.5 text-sm cursor-pointer hover:bg-[var(--bg-hover)] rounded">
+                              <input
+                                type="checkbox"
+                                checked={newAccBranchIds.includes(branch.id)}
+                                onChange={(e) => setNewAccBranchIds(previous => e.target.checked
+                                  ? [...previous, branch.id]
+                                  : previous.filter(id => id !== branch.id))}
+                                className="rounded bg-[var(--bg-main)] text-blue-600"
+                              />
+                              <span>{branch.name}</span>
+                            </label>
+                          ))}
+                          {branches.length === 0 && <p className="px-2 py-1 text-xs text-[var(--text-secondary)]">{t.selectBranchesHint}</p>}
+                        </div>
                       </div>
                     )}
 
@@ -2692,7 +2709,10 @@ export function App() {
                       </thead>
                       <tbody className="divide-y divide-[var(--border-color)] text-sm">
                         {users.map(u => {
-                          const linkedB = branches.find(b => b.id === u.branchId);
+                          const assignedBranchIds = u.branchIds?.length ? u.branchIds : u.branchId ? [u.branchId] : [];
+                          const linkedBranchNames = [...new Set(assignedBranchIds
+                            .map(id => branches.find(branch => branch.id === id)?.name)
+                            .filter((name): name is string => Boolean(name)))];
                           return (
                             <tr key={u.id} className="hover:bg-[var(--bg-hover)]">
                               <td className="p-3 font-semibold">{u.name}</td>
@@ -2713,7 +2733,7 @@ export function App() {
                                 </span>
                               </td>
                               <td className="p-3 text-[var(--text-secondary)]">
-                                {linkedB ? linkedB.name : t.generalOrNone}
+                                {linkedBranchNames.length > 0 ? linkedBranchNames.join(', ') : t.generalOrNone}
                               </td>
                               <td className="p-3 text-center">
                                 {u.id !== 1 && (
