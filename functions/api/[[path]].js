@@ -1,7 +1,7 @@
 import { neon } from '@neondatabase/serverless';
 
 const cookieName = 'dataelec_session';
-const passwordIterations = 120_000;
+const passwordIterations = 100_000;
 const sessionLifetimeSeconds = 8 * 60 * 60;
 const loginWindowMilliseconds = 15 * 60 * 1000;
 const loginLimit = 10;
