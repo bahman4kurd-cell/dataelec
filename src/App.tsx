@@ -19,7 +19,7 @@ import {
   EyeOff
 } from 'lucide-react';
 
-// ناونیشانی باکئیند لەسەر Render
+// API same-origin لە Cloudflare Pages Functions ـەوە بەکاردێت.
 const API_URL = '';
 
 type ThemeType = 'government' | 'dark' | 'light' | 'bee' | 'ocean' | 'sunset';
