@@ -20,7 +20,7 @@ import {
 } from 'lucide-react';
 
 // ناونیشانی باکئیند لەسەر Render
-const API_URL = "https://dataelec.onrender.com";
+const API_URL = '';
 
 type ThemeType = 'government' | 'dark' | 'light' | 'bee' | 'ocean' | 'sunset';
 type ChartType = 'bars' | 'pie' | 'donut' | 'progress' | 'line' | 'network' | 'radial';
@@ -30,7 +30,7 @@ type LanguageType = 'ckb' | 'kmr' | 'en' | 'ar' | 'fa';
 interface UserAccount {
   id: number;
   username: string;
-  password: string;
+  password?: string;
   role: UserRole;
   branchId?: number | null;
   branchIds?: number[];
@@ -566,17 +566,6 @@ export function App() {
   const [newPartyName, setNewPartyName] = useState('');
   const [newPartyColor, setNewPartyColor] = useState('#3b82f6');
 
-  // وەرگرتنی خولەکان یان دەنگەکان لە باکئیند لەسەر Render لەگەڵ کۆنترۆڵی تاقیکاری Console
-  useEffect(() => {
-    console.log("Fetching data from backend...");
-    fetch(`${API_URL}/api/rounds`)
-      .then(res => res.json())
-      .then(data => {
-        console.log("Data received:", data);
-      })
-      .catch(err => console.error("Fetch error:", err));
-  }, []);
-
   // فەنکشنی پاشەکەوتکردنی دەنگەکان لە باکئیند
   const saveVotesToBackend = async (regionId: number, votesList: any[]) => {
     try {
@@ -608,25 +597,26 @@ export function App() {
     if (latestMe) setCurrentUser(latestMe);
   }, [users, currentUser]);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoginError('');
 
-    if (!isStateLoaded) {
-      setLoginError(lang === 'ckb'
-        ? 'پەیوەندی بە سێرڤەری داتا (Render) سەرکەوتوو نەبووە! بەکارهێنەران تەنها لە داتابەیسی ڕێندەرەوە دێن.'
-        : 'Unable to connect to the data server (Render)! Users come only from the Render database.');
-      return;
-    }
+    try {
+      const response = await fetch(`${API_URL}/api/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'Unable to sign in.');
 
-    const normalizedUsername = username.trim().toLowerCase();
-    const foundUser = users.find(u => u.username.trim().toLowerCase() === normalizedUsername && u.password === password);
-
-    if (foundUser) {
-      setCurrentUser(foundUser);
+      setCurrentUser(result.user);
+      await loadSharedState();
       setIsLoggedIn(true);
-    } else {
-      setLoginError(lang === 'ckb' ? 'ناوی بەکارهێنەر یان وشەی نهێنی هەڵەیە! تکایە دڵنیابەوە لە زانیارییەکان.' : 'Invalid username or password! Please check your credentials.');
+    } catch (error) {
+      setLoginError(error instanceof Error
+        ? error.message
+        : 'ناوی بەکارهێنەر یان وشەی نهێنی هەڵەیە!');
     }
   };
 
@@ -699,6 +689,8 @@ export function App() {
   };
 
   const handleLogout = () => {
+    void fetch(`${API_URL}/api/logout`, { method: 'POST' })
+      .catch(error => console.error('Unable to end server session:', error));
     setIsLoggedIn(false);
     setCurrentUser(null);
     setUsername('');
@@ -817,26 +809,39 @@ export function App() {
     });
   };
 
+  const loadSharedState = async () => {
+    const response = await fetch(`${API_URL}/api/state`);
+    if (!response.ok) throw new Error('Unable to load shared state.');
+    const data = await response.json();
+    if (Array.isArray(data.users) && data.users.length > 0) setUsers(data.users);
+    if (Array.isArray(data.defaultParties)) setDefaultParties(data.defaultParties);
+    if (Array.isArray(data.rounds)) setRounds(data.rounds);
+    if (Array.isArray(data.branches)) setBranches(data.branches);
+    if (Array.isArray(data.regions)) setRegions(data.regions);
+    if (data.regionVotes) setRegionVotes(data.regionVotes);
+    if (data.branchVotes) setBranchVotes(data.branchVotes);
+    if (data.branchMeta) setBranchMeta(data.branchMeta);
+    if (data.regionMeta) setRegionMeta(data.regionMeta);
+    if (typeof data.selectedRoundId === 'number') setSelectedRoundId(data.selectedRoundId);
+    if (typeof data.selectedBranchId === 'number') setSelectedBranchId(data.selectedBranchId);
+    if (typeof data.selectedRegionId === 'number') setSelectedRegionId(data.selectedRegionId);
+    if (typeof data.dashSelectedRoundId === 'number') setDashSelectedRoundId(data.dashSelectedRoundId);
+    setIsStateLoaded(true);
+  };
+
   useEffect(() => {
     const loadState = async () => {
       try {
-        const response = await fetch(`${API_URL}/api/state`);
-        if (!response.ok) throw new Error('Unable to load shared state.');
-        const data = await response.json();
-        if (Array.isArray(data.users) && data.users.length > 0) setUsers(data.users);
-        if (Array.isArray(data.defaultParties)) setDefaultParties(data.defaultParties);
-        if (Array.isArray(data.rounds)) setRounds(data.rounds);
-        if (Array.isArray(data.branches)) setBranches(data.branches);
-        if (Array.isArray(data.regions)) setRegions(data.regions);
-        if (data.regionVotes) setRegionVotes(data.regionVotes);
-        if (data.branchVotes) setBranchVotes(data.branchVotes);
-        if (data.branchMeta) setBranchMeta(data.branchMeta);
-        if (data.regionMeta) setRegionMeta(data.regionMeta);
-        if (typeof data.selectedRoundId === 'number') setSelectedRoundId(data.selectedRoundId);
-        if (typeof data.selectedBranchId === 'number') setSelectedBranchId(data.selectedBranchId);
-        if (typeof data.selectedRegionId === 'number') setSelectedRegionId(data.selectedRegionId);
-        if (typeof data.dashSelectedRoundId === 'number') setDashSelectedRoundId(data.dashSelectedRoundId);
-        setIsStateLoaded(true);
+        const response = await fetch(`${API_URL}/api/session`);
+        if (response.status === 401) {
+          setIsStateLoaded(true);
+          return;
+        }
+        if (!response.ok) throw new Error('Unable to validate session.');
+        const session = await response.json();
+        setCurrentUser(session.user);
+        await loadSharedState();
+        setIsLoggedIn(true);
       } catch (error) {
         console.error('Unable to load data from Render:', error);
         setServerUnreachable(true);
@@ -846,7 +851,7 @@ export function App() {
   }, []);
 
   useEffect(() => {
-    if (!isStateLoaded) return;
+    if (!isStateLoaded || !isLoggedIn || currentUser?.role === 'viewer') return;
     const timeoutId = window.setTimeout(() => {
       void fetch(`${API_URL}/api/state`, {
         method: 'PUT',
@@ -866,11 +871,15 @@ export function App() {
           selectedRegionId,
           dashSelectedRoundId,
         }),
+      }).then(response => {
+        if (!response.ok) throw new Error(`State save failed with HTTP ${response.status}.`);
       }).catch(error => console.error('Unable to save data to Render:', error));
     }, 500);
     return () => window.clearTimeout(timeoutId);
   }, [
     isStateLoaded,
+    isLoggedIn,
+    currentUser,
     users,
     defaultParties,
     rounds,
@@ -2719,8 +2728,9 @@ export function App() {
                               <td className="p-3 text-[var(--text-secondary)]">{u.username}</td>
                               <td className="p-3">
                                 <input
-                                  type="text"
-                                  defaultValue={u.password}
+                                  type="password"
+                                  defaultValue=""
+                                  placeholder="تەنها بۆ گۆڕینی وشەی نهێنی"
                                   onBlur={(e) => handleAdminUpdateUserPassword(u.id, e.target.value)}
                                   className="bg-[var(--bg-main)] border border-[var(--border-color)] rounded px-2 py-1 text-xs w-full min-w-[6rem] max-w-[9rem] focus:outline-none"
                                 />
